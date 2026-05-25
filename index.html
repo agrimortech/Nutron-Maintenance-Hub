@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NUTRON AgTech Maintenance Dashboard - DAND Initiative</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Custom Scrollbar for modern look */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        
+        /* Sync pulsing animation */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+        .sync-pulse {
+            animation: pulse-ring 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
+
+    <!-- TOP HEADER / BRAND BAR -->
+    <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 sticky top-0 z-40 shadow-lg">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-tr from-sky-500 to-emerald-500 p-2 rounded-xl shadow-md">
+                    <i data-lucide="sprout" class="w-6 h-6 text-slate-950"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold uppercase tracking-widest text-sky-400">Aerodyne Geospatial</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">DAND Initiative</span>
+                    </div>
+                    <h1 class="text-lg md:text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                        NUTRON™ System Maintenance Hub
+                    </h1>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3 text-xs">
+                <!-- Sync Monitor Badge -->
+                <div id="sync-status-badge" class="bg-slate-950/80 px-3.5 py-2 rounded-lg border border-slate-800 flex items-center gap-2">
+                    <span class="relative flex h-2 w-2">
+                        <span class="sync-pulse absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500" id="sync-dot"></span>
+                    </span>
+                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400" id="sync-text">Connecting...</span>
+                </div>
+
+                <div class="bg-slate-800/80 px-4 py-2 rounded-lg border border-slate-700 flex items-center gap-2.5">
+                    <i data-lucide="clock" class="w-4 h-4 text-emerald-400"></i>
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Current System Date</p>
+                        <p id="current-system-date" class="font-bold text-slate-200">May 25, 2026</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 py-6 md:py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- SIDEBAR - FARM LIST (4 cols on large screen) -->
+        <section class="lg:col-span-4 flex flex-col gap-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3">
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-sky-400"></i> Active Farm Sites
+                    </h2>
+                    <button onclick="openAddFarmModal()" class="px-2.5 py-1 text-[11px] font-black bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-lg flex items-center gap-1 transition-all shadow-md">
+                        <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Farm
+                    </button>
+                </div>
+                
+                <!-- Quick Search / Filter -->
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-500"></i>
+                    <input type="text" id="farm-search" oninput="filterFarms()" placeholder="Search farms, crops, locations..." 
+                           class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                </div>
+
+                <!-- Farm Cards Stack -->
+                <div id="farm-list-container" class="flex flex-col gap-2.5 max-h-[500px] overflow-y-auto pr-1">
+                    <div class="text-center py-8 text-slate-500 text-xs animate-pulse">Initializing cloud workspace...</div>
+                </div>
+            </div>
+
+            <!-- ESCALATION CARD -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-sky-500/5 rounded-full blur-2xl"></div>
+                <h3 class="font-bold text-sm text-white mb-2 flex items-center gap-2">
+                    <i data-lucide="help-circle" class="w-4 h-4 text-sky-400"></i> Technical Escalations
+                </h3>
+                <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                    Under the NUTRON warranty, urgent physical defects or instrumentation queries must be logged directly with project administrators:
+                </p>
+                <div class="flex flex-col gap-2">
+                    <a href="mailto:shahrir.salleh@aerodyne.group" class="flex items-center gap-2 text-xs text-sky-400 hover:text-sky-300 transition-colors">
+                        <i data-lucide="mail" class="w-4 h-4"></i> shahrir.salleh@aerodyne.group
+                    </a>
+                    <a href="tel:+601175273982" class="flex items-center gap-2 text-xs text-emerald-400 hover:text-emerald-300 transition-colors">
+                        <i data-lucide="phone" class="w-4 h-4"></i> +60 11-7527 3982
+                    </a>
+                </div>
+            </div>
+
+            <!-- RESET TO DEFAULT PRESETS -->
+            <button onclick="confirmResetDefaults()" class="px-4 py-2 text-slate-500 hover:text-rose-400 text-xs font-semibold rounded-lg hover:bg-rose-500/5 border border-transparent hover:border-rose-500/10 transition-all flex items-center justify-center gap-2">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Reset Database to Original Presets
+            </button>
+        </section>
+
+        <!-- MAIN INTERACTIVE SECTION (8 cols) -->
+        <section class="lg:col-span-8 flex flex-col gap-6">
+
+            <!-- TIMELINE COUNTDOWNS (Dynamically tied to selected farm targets) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- 6-MONTH COUNTDOWN -->
+                <div class="bg-gradient-to-r from-slate-900 to-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 rounded-full blur-xl pointer-events-none"></div>
+                    <div class="flex items-start gap-3">
+                        <div class="bg-sky-500/10 p-2.5 rounded-xl border border-sky-500/20 text-sky-400">
+                            <i data-lucide="milestone" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-sky-400">6-Month PM Target</span>
+                            <h4 class="font-extrabold text-sm text-slate-100" id="target-6m-phase-label">Phase 1 PM Schedule</h4>
+                            <p class="text-xs text-slate-400 mt-0.5" id="target-6m-text">--</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span id="countdown-6m" class="text-xl font-black block tracking-tight">--</span>
+                        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Status</span>
+                    </div>
+                </div>
+
+                <!-- 12-MONTH COUNTDOWN -->
+                <div class="bg-gradient-to-r from-slate-900 to-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
+                    <div class="flex items-start gap-3">
+                        <div class="bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20 text-emerald-400">
+                            <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">12-Month PM Target</span>
+                            <h4 class="font-extrabold text-sm text-slate-100" id="target-12m-phase-label">Warranty PM Audit</h4>
+                            <p class="text-xs text-slate-400 mt-0.5" id="target-12m-text">--</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span id="countdown-12m" class="text-xl font-black block tracking-tight">--</span>
+                        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Status</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- MAIN WORKSPACE -->
+            <div id="main-workspace" class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl relative min-h-[500px] flex flex-col justify-between">
+                
+                <!-- EMPTY SITE STATE -->
+                <div id="workspace-empty-state" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center hidden">
+                    <div class="bg-slate-850 p-4 rounded-full border border-slate-700 text-sky-400 mb-4">
+                        <i data-lucide="sprout" class="w-8 h-8"></i>
+                    </div>
+                    <h3 class="font-extrabold text-base text-white">No deployment records found</h3>
+                    <p class="text-xs text-slate-400 max-w-xs mt-1 leading-relaxed">
+                        There are currently no active farm deployments tracked. Click the button below to add your first AgTech installation.
+                    </p>
+                    <button onclick="openAddFarmModal()" class="mt-4 px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black rounded-lg text-xs transition-all flex items-center gap-1.5 shadow-lg">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Add First Farm
+                    </button>
+                </div>
+
+                <!-- WORKSPACE ACTIVE CONTENT -->
+                <div id="workspace-active-content" class="flex flex-col gap-6 w-full">
+                    
+                    <!-- SELECTED FARM MAIN BLOCK -->
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between pb-6 border-b border-slate-800/80 gap-4">
+                        <div class="flex flex-col gap-1.5 flex-grow">
+                            <div class="flex items-center flex-wrap gap-2">
+                                <span class="text-xs font-semibold px-2 py-0.5 bg-sky-500/10 text-sky-400 rounded-full border border-sky-500/20 shadow-sm" id="active-crop">
+                                    Loading...
+                                </span>
+                                <span class="text-xs font-mono text-slate-500" id="active-ref">--</span>
+                                
+                                <!-- Direct CRUD Controls -->
+                                <div class="flex items-center gap-1.5 ml-auto md:ml-3">
+                                    <button onclick="openEditFarmModal()" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-sky-400 hover:text-sky-300 rounded-lg border border-slate-700 transition-all shadow-sm" title="Edit Site Details">
+                                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    <button onclick="confirmDeleteFarm()" class="p-1.5 bg-slate-800 hover:bg-rose-950 hover:text-rose-400 text-slate-400 rounded-lg border border-slate-700 hover:border-rose-900 transition-all shadow-sm" title="Delete Installation">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <h2 class="text-xl font-extrabold text-white tracking-tight" id="active-farm-name">Loading Farm...</h2>
+                            <p class="text-xs text-slate-400 flex items-center gap-1.5 mt-1 leading-relaxed">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-slate-500 flex-shrink-0"></i> 
+                                <span id="active-farm-address">--</span>
+                            </p>
+                            <p class="text-[11px] text-slate-500 mt-1 flex items-center gap-1.5">
+                                <i data-lucide="calendar-days" class="w-3.5 h-3.5"></i>
+                                Deployment Date: <span id="active-farm-deployment-display" class="font-bold text-slate-300">--</span>
+                            </p>
+                        </div>
+
+                        <!-- Contact details bubble -->
+                        <div class="bg-slate-950/80 border border-slate-800 px-4 py-3 rounded-xl flex flex-col gap-0.5 text-xs max-w-xs">
+                            <div class="flex items-center gap-1 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                                <i data-lucide="user" class="w-3.5 h-3.5 text-sky-400"></i> Local Operator
+                            </div>
+                            <span class="font-bold text-slate-200 truncate" id="active-farm-contact">--</span>
+                        </div>
+                    </div>
+
+                    <!-- SCHEDULER SEGMENTED TABS -->
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex gap-1 w-full sm:w-auto">
+                            <button onclick="switchInterval('6month')" id="tab-6month" 
+                                    class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                                <i data-lucide="calendar-check" class="w-4 h-4"></i> 6-Month Maintenance
+                            </button>
+                            <button onclick="switchInterval('12month')" id="tab-12month" 
+                                    class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                                <i data-lucide="badge-check" class="w-4 h-4"></i> 12-Month PM & Audit
+                            </button>
+                        </div>
+
+                        <!-- Live Progression Meter -->
+                        <div class="flex items-center gap-3 ml-auto sm:ml-0">
+                            <div class="text-right hidden sm:block">
+                                <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Checklist Progress</span>
+                                <div class="text-xs font-black text-slate-300" id="progress-text">0 / 10 Completed</div>
+                            </div>
+                            <!-- Circular progress simulated SVG -->
+                            <div class="relative w-12 h-12 flex-shrink-0">
+                                <svg class="w-12 h-12 transform -rotate-90">
+                                    <circle cx="24" cy="24" r="20" stroke="currentColor" class="text-slate-800" stroke-width="4" fill="transparent"/>
+                                    <circle id="progress-circle" cx="24" cy="24" r="20" stroke="currentColor" class="text-sky-400 transition-all duration-300" stroke-dasharray="125.6" stroke-dashoffset="125.6" stroke-width="4" fill="transparent"/>
+                                </svg>
+                                <span class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-200" id="progress-percentage">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CHECKLIST GRID -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- MECHANICAL -->
+                        <div class="flex flex-col gap-4">
+                            <div class="flex items-center gap-2 pb-2 border-b border-slate-800">
+                                <div class="p-1 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                    <i data-lucide="wrench" class="w-4 h-4"></i>
+                                </div>
+                                <h3 class="font-bold text-xs uppercase tracking-wider text-slate-300">Mechanical & Fluidics</h3>
+                            </div>
+                            <div class="flex flex-col gap-2.5" id="checklist-mechanical"></div>
+                        </div>
+
+                        <!-- ELECTRICAL -->
+                        <div class="flex flex-col gap-4">
+                            <div class="flex items-center gap-2 pb-2 border-b border-slate-800">
+                                <div class="p-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                    <i data-lucide="zap" class="w-4 h-4"></i>
+                                </div>
+                                <h3 class="font-bold text-xs uppercase tracking-wider text-slate-300">Power & Controls</h3>
+                            </div>
+                            <div class="flex flex-col gap-2.5" id="checklist-electrical"></div>
+                        </div>
+
+                        <!-- SENSORS -->
+                        <div class="flex flex-col gap-4">
+                            <div class="flex items-center gap-2 pb-2 border-b border-slate-800">
+                                <div class="p-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                    <i data-lucide="cpu" class="w-4 h-4"></i>
+                                </div>
+                                <h3 class="font-bold text-xs uppercase tracking-wider text-slate-300">Sensors & Telemetry</h3>
+                            </div>
+                            <div class="flex flex-col gap-2.5" id="checklist-sensors"></div>
+                        </div>
+                    </div>
+
+                    <!-- ACTION & SIGN OFF SEGMENT -->
+                    <div class="mt-4 bg-slate-950/60 border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4">
+                        <h3 class="font-bold text-xs uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                            <i data-lucide="clipboard-signature" class="w-4 h-4 text-sky-400"></i> Log Sign-off & Completion Form
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Technician / Lead Inspector</label>
+                                <input type="text" id="tech-name" oninput="saveInputsDebounced()" placeholder="Name of Aerodyne Engineer" 
+                                       class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Digital Signature Verification</label>
+                                <input type="text" id="tech-signature" oninput="saveInputsDebounced()" placeholder="Type initials to e-Sign" 
+                                       class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Maintenance Diagnosis & Notes</label>
+                            <textarea id="tech-notes" oninput="saveInputsDebounced()" rows="3" placeholder="Detailed observations of sensors, replacement calibrations, system pressure metrics or troubleshooting done..."
+                                      class="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-sky-500"></textarea>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-slate-900/80">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-slate-400">Completion Status:</span>
+                                <span id="completion-badge" class="px-2.5 py-1 rounded text-xs font-bold border">--</span>
+                            </div>
+                            
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <button onclick="toggleCompletedState()" id="mark-complete-btn"
+                                        class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700">
+                                    <i data-lucide="check-circle" class="w-4 h-4"></i> Mark System Complete
+                                </button>
+                                <button onclick="generateReportModal()" 
+                                        class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-gradient-to-r from-sky-600 to-sky-500 text-slate-950 font-bold hover:from-sky-500 hover:to-sky-400 transition-all shadow-md flex items-center justify-center gap-2 text-slate-950 font-black">
+                                    <i data-lucide="printer" class="w-4 h-4"></i> Compile Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- CREATE / EDIT INSTALLATION MODAL -->
+    <div id="farm-modal" class="fixed inset-0 bg-slate-950/85 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl overflow-hidden flex flex-col shadow-2xl">
+            <!-- Header -->
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="sprout" class="w-5 h-5 text-sky-400"></i>
+                    <h3 class="font-extrabold text-sm text-white" id="modal-title">Add New Installation</h3>
+                </div>
+                <button onclick="closeFarmModal()" class="text-slate-400 hover:text-white p-1 bg-slate-850 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <!-- Content Form -->
+            <div class="p-6 flex flex-col gap-4 overflow-y-auto max-h-[70vh] text-xs">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">System Reference ID</label>
+                        <input type="text" id="form-farm-ref" placeholder="e.g. P64346" 
+                               class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Crop System Type</label>
+                        <input type="text" id="form-farm-crop" placeholder="e.g. Leafy Vegetables" 
+                               class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Farm / Company Name</label>
+                    <input type="text" id="form-farm-name" placeholder="e.g. Agro Produce Sdn Bhd" 
+                           class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Lead Contact / Owner</label>
+                        <input type="text" id="form-farm-owner" placeholder="e.g. Tee Liang Kok" 
+                               class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Operator Badge / Position</label>
+                        <input type="text" id="form-farm-contact" placeholder="e.g. Tee Liang Kok (Director)" 
+                               class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Site Details & Address</label>
+                    <textarea id="form-farm-address" rows="2" placeholder="Site physical location address details..."
+                              class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500"></textarea>
+                </div>
+
+                <div class="border-t border-slate-800 pt-4 mt-2">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-3">Timeline Targets Configuration</span>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Deployment Date</label>
+                            <input type="date" id="form-farm-deployment" onchange="handleDeploymentDateChange(this.value)"
+                                   class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">6-Month Target</label>
+                            <input type="date" id="form-farm-6m" 
+                                   class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">12-Month Target</label>
+                            <input type="date" id="form-farm-12m" 
+                                   class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                        </div>
+                    </div>
+                    <p class="text-[9px] text-slate-500 mt-2 italic">Altering the Deployment Date automatically calculates 6 & 12-month suggestions, which can be modified manually.</p>
+                </div>
+            </div>
+            <!-- Footer Controls -->
+            <div class="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-end gap-2.5">
+                <button onclick="closeFarmModal()" class="px-4 py-2 bg-slate-900 border border-slate-800 hover:text-white rounded-lg text-xs font-bold text-slate-300">Cancel</button>
+                <button onclick="saveFarmForm()" class="px-4 py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-slate-950 rounded-lg text-xs font-bold hover:from-sky-400 hover:to-sky-500 shadow-md">Save Installation</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REMOVE INSTALLATION CONFIRMATION DIALOG -->
+    <div id="delete-modal" class="fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl flex flex-col gap-4">
+            <h3 class="font-extrabold text-sm text-white flex items-center gap-2">
+                <i data-lucide="trash-2" class="w-5 h-5 text-rose-500"></i> Delete Farm Record?
+            </h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+                Are you sure you want to completely remove <strong id="delete-farm-name" class="text-white">this farm</strong> from the deployment hub database? This permanent deletion instantly propagates to all synchronized team screens.
+            </p>
+            <div class="flex items-center justify-end gap-2 mt-2">
+                <button onclick="closeDeleteModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold">Cancel</button>
+                <button onclick="executeDeleteFarm()" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 rounded-lg text-xs text-white font-bold">Yes, Delete Record</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIRM RESET DIALOG -->
+    <div id="reset-modal" class="fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl flex flex-col gap-4">
+            <h3 class="font-extrabold text-sm text-white flex items-center gap-2">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-500"></i> Reset Database?
+            </h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+                This action will overwrite any current team adjustments with the baseline deployment details from October 31, 2025. It cannot be undone in real-time.
+            </p>
+            <div class="flex items-center justify-end gap-2 mt-2">
+                <button onclick="closeResetModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold">Cancel</button>
+                <button onclick="resetDefaults()" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 rounded-lg text-xs text-white font-bold">Yes, Reset Baseline</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REPORT PREVIEW & EXPORT MODAL -->
+    <div id="report-modal" class="fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <!-- Modal Header -->
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-5 h-5 text-sky-400"></i>
+                    <h3 class="font-extrabold text-sm text-white">NUTRON Deployment Maintenance Log Sheet</h3>
+                </div>
+                <button onclick="closeReportModal()" class="text-slate-400 hover:text-white transition-colors p-1 bg-slate-850 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div id="report-printable-area" class="p-6 overflow-y-auto flex flex-col gap-6 bg-white text-slate-900 font-sans">
+                <!-- Formal Letterhead -->
+                <div class="flex items-start justify-between pb-4 border-b-2 border-slate-800 gap-4">
+                    <div>
+                        <h1 class="text-xl font-black text-slate-900 uppercase tracking-tight">Aerodyne Geospatial Sdn Bhd</h1>
+                        <p class="text-[9px] text-slate-500">AgTech Nationwide Deployment System Division | DAND Initiative</p>
+                    </div>
+                    <div class="text-right text-[10px] text-slate-500">
+                        <p class="font-bold text-slate-800">DOCUMENT ID: AERO-NUTR-2026</p>
+                        <p>Date Checked: <span id="report-date-checked">--</span></p>
+                    </div>
+                </div>
+
+                <!-- Title Banner -->
+                <div class="bg-slate-100 p-3 rounded-lg text-center">
+                    <h2 class="text-xs font-bold uppercase text-slate-800 tracking-wider">
+                        Preventive Maintenance Completion Sign-Off Log
+                    </h2>
+                </div>
+
+                <!-- Metadata Grid -->
+                <div class="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">FARM CLIENT / DETAILS</p>
+                        <p class="font-extrabold text-slate-900 text-sm mt-0.5" id="report-farm-name">--</p>
+                        <p class="text-slate-600 mt-1" id="report-farm-address">--</p>
+                        <p class="text-slate-700 mt-1"><strong>Crop System Type:</strong> <span id="report-crop">--</span></p>
+                    </div>
+                    <div class="border-l border-slate-200 pl-4 flex flex-col justify-between">
+                        <div>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">AUDIT CATEGORY</p>
+                            <p class="font-extrabold text-slate-800 text-sm mt-0.5" id="report-category">--</p>
+                        </div>
+                        <div class="mt-2">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">PROJECT SYSTEM REFERENCE</p>
+                            <p class="font-mono text-slate-700" id="report-ref">--</p>
+                            <p class="text-slate-500">Deployment Date: <span id="report-deployment-date">--</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Checklist Summary -->
+                <div>
+                    <h3 class="text-[10px] font-bold text-slate-800 uppercase border-b border-slate-300 pb-1 mb-2">
+                        System Diagnostics Verified Checks
+                    </h3>
+                    <div class="grid grid-cols-3 gap-3 text-xs" id="report-checklist-summary">
+                        <!-- Summary list of categories populated via script -->
+                    </div>
+                </div>
+
+                <!-- Diagnostics & Notes Block -->
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                    <h3 class="text-[10px] font-bold text-slate-800 uppercase mb-1.5">Diagnosis Observations & Interventions</h3>
+                    <p class="text-xs text-slate-700 leading-relaxed italic" id="report-notes">No notes generated.</p>
+                </div>
+
+                <!-- E-Signatures -->
+                <div class="grid grid-cols-2 gap-8 pt-6 border-t border-slate-200 mt-auto text-xs">
+                    <div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">AUTHORIZED TECHNICIAN</p>
+                        <div class="h-12 flex items-end border-b border-slate-300 pb-1">
+                            <span class="font-mono font-bold text-sm text-sky-700 italic" id="report-sign-tech">Not Signed</span>
+                        </div>
+                        <p class="text-slate-800 font-bold mt-1" id="report-name-tech">--</p>
+                        <p class="text-[9px] text-slate-500">Aerodyne Operations Engineer</p>
+                    </div>
+                    <div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">OPERATION SIGN-OFF</p>
+                        <div class="h-12 flex items-end border-b border-slate-300 pb-1">
+                            <span class="font-mono font-bold text-xs text-slate-400 italic">SYSTEM_VERIFIED_MD5_KEY</span>
+                        </div>
+                        <p class="text-slate-800 font-bold mt-1">Shahrir Salleh</p>
+                        <p class="text-[9px] text-slate-500">Aerodyne Project Manager</p>
+                    </div>
+                </div>
+
+                <!-- Disclaimer footer -->
+                <p class="text-[8px] text-slate-400 text-center leading-relaxed">
+                    This maintenance compliance document is registered digitally in compliance with Aerodyne AgTech standard warranty protocol. It satisfies physical verification obligations under Section 5.1 of the DAND Program rules for the NUTRON System.
+                </p>
+            </div>
+
+            <!-- Modal Footer Controls -->
+            <div class="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between gap-3">
+                <button onclick="copyReportText()" 
+                        class="px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold text-slate-300 hover:text-white flex items-center gap-2">
+                    <i data-lucide="copy" class="w-4 h-4"></i> Copy Report Text
+                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="closeReportModal()" 
+                            class="px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold text-slate-300 hover:text-white">
+                        Back to Workspace
+                    </button>
+                    <button onclick="printReport()" 
+                            class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg text-xs text-slate-950 font-bold hover:from-emerald-400 hover:to-emerald-500 flex items-center gap-2 shadow-md">
+                        <i data-lucide="printer" class="w-4 h-4"></i> Print / Save PDF
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- NOTIFICATION SYSTEM -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <!-- FIREBASE AND CORE LOGIC -->
+    <script type="module">
+        // Import Firebase SDK Modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global state and constants
+        const SYSTEM_DATE = new Date('2026-05-25');
+
+        let currentFarmIndex = 0;
+        let activeInterval = '6month';
+        let isFirebaseActive = false;
+        let db = null;
+        let auth = null;
+        let appId = "default-app-id";
+        let isEditing = false; // State track for Add vs Edit modal forms
+
+        // Baseline Data presets representing deployment file records with target dates
+        const baselineFarms = [
+            {
+                name: "Agro Fresh Produce Sdn Bhd",
+                owner: "Tee Liang Kok",
+                address: "H.S (M) 25748 PT30862 Revolusi Hijau Batu 5, Johan Setia, 41200 Klang, Selangor, Malaysia",
+                crop: "Leafy Vegetables",
+                refNo: "Ref No: P64341",
+                contact: "Tee Liang Kok (Director)",
+                deploymentDate: "2025-10-31",
+                date6m: "2026-04-30",
+                date12m: "2026-10-31",
+                checks6m: {
+                    mechanical: [true, true, true],
+                    electrical: [true, true, true],
+                    sensors: [true, true, true, true]
+                },
+                checks12m: {
+                    mechanical: [false, false, false],
+                    electrical: [false, false, false],
+                    sensors: [false, false, false, false]
+                },
+                notes6m: "System inspected. Highly functional water delivery cycle. Cleared bio-sediments inside Tank Unit 2. Dosing meters calibrated accurately.",
+                notes12m: "",
+                techName6m: "Farhan Iskandar",
+                techName12m: "",
+                sign6m: "Farhan.I",
+                sign12m: "",
+                completed6m: true,
+                completed12m: false
+            },
+            {
+                name: "Lian Sheng Farm Plantation Sdn Bhd",
+                owner: "Ng Chee Hoe",
+                address: "Lot 6-10, PT 1200, Mukim Sigar, 18300 Lojing, Kelantan, Malaysia",
+                crop: "Highland Vegetables",
+                refNo: "Ref No: P64342",
+                contact: "Ng Chee Hoe (Director)",
+                deploymentDate: "2025-10-31",
+                date6m: "2026-04-30",
+                date12m: "2026-10-31",
+                checks6m: {
+                    mechanical: [true, true, true],
+                    electrical: [true, true, false],
+                    sensors: [true, true, false, true]
+                },
+                checks12m: {
+                    mechanical: [false, false, false],
+                    electrical: [false, false, false],
+                    sensors: [false, false, false, false]
+                },
+                notes6m: "Mechanical components secure. High performance registered. Emergency Stop system fully verified. Main cooling fan has some slight dust accumulation, recommends cleaning in 12-Month PM. Calibration offset of 0.2 pH adjusted.",
+                notes12m: "",
+                techName6m: "Ahmad Kamil",
+                techName12m: "",
+                sign6m: "Kamil.A",
+                sign12m: "",
+                completed6m: false,
+                completed12m: false
+            },
+            {
+                name: "Harvest Genix",
+                owner: "Thervarmuthes A/L Varatharaju",
+                address: "Land No Lot 2225 & Lot 2241, No GM 1666 & 1665, 71700 Mantin, Negeri Sembilan, Malaysia",
+                crop: "Fruits - Rock Melon",
+                refNo: "Ref No: P64343",
+                contact: "Thervarmuthes A/L Varatharaju (Owner)",
+                deploymentDate: "2025-10-31",
+                date6m: "2026-04-30",
+                date12m: "2026-10-31",
+                checks6m: {
+                    mechanical: [false, false, false],
+                    electrical: [false, false, false],
+                    sensors: [false, false, false, false]
+                },
+                checks12m: {
+                    mechanical: [false, false, false],
+                    electrical: [false, false, false],
+                    sensors: [false, false, false, false]
+                },
+                notes6m: "",
+                notes12m: "",
+                techName6m: "",
+                techName12m: "",
+                sign6m: "",
+                sign12m: "",
+                completed6m: false,
+                completed12m: false
+            },
+            {
+                name: "OK Farm",
+                owner: "Tan Yeong Thai",
+                address: "OK Farm (M) Sdn Bhd, Lot 5622, Kampung Dengkil, 43800 Dengkil, Selangor, Malaysia",
+                crop: "Fruits - Leafy Mixed",
+                refNo: "Ref No: P64344",
+                contact: "Tan Yeong Thai (Director)",
+                deploymentDate: "2025-10-31",
+                date6m: "2026-04-30",
+                date12m: "2026-10-31",
+                checks6m: {
+                    mechanical: [true, true, true],
+                    electrical: [true, true, true],
+                    sensors: [true, true, true, true]
+                },
+                checks12m: {
+                    mechanical: [false, false, false],
+                    electrical: [false, false, false],
+                    sensors: [false, false, false, false]
+                },
+                notes6m: "All elements audited. High accuracy telemetry transmission rates (packet confirmation every 10 sec). Bioreactor performance meets high delivery metrics.",
+                notes12m: "",
+                techName6m: "Farhan Iskandar",
+                techName12m: "",
+                sign6m: "Farhan.I",
+                sign12m: "",
+                completed6m: true,
+                completed12m: false
+            },
+            {
+                name: "Benefigs",
+                owner: "Hafidz Bin Arifin",
+                address: "Benefigs, Lot 5242 Olak Lempit, 42700 Banting, Selangor, Malaysia",
+                crop: "Fruits - Figs",
+                refNo: "Ref No: P64345",
+                contact: "Hafidz Bin Arifin (Founder / Figs Arus Sdn Bhd)",
+                deploymentDate: "2025-10-31",
+                date6m: "2026-04-30",
+                date12m: "2026-10-31",
+                checks6m: {
+                    mechanical: [true, true, true],
+                    electrical: [true, true, true],
+                    sensors: [true, true, true, true]
+                },
+                checks12m: {
+                    mechanical: [false, false, false],
+                    electrical: [false, false, false],
+                    sensors: [false, false, false, false]
+                },
+                notes6m: "Verified with lead operators on-site. Dosing pump flow rates confirmed matching standard values. Calibration set points secured.",
+                notes12m: "",
+                techName6m: "Sufian Shafi",
+                techName12m: "",
+                sign6m: "Sufian.S",
+                sign12m: "",
+                completed6m: true,
+                completed12m: false
+            }
+        ];
+
+        // Primary array that holds live state
+        let farms = JSON.parse(JSON.stringify(baselineFarms));
+
+        const checklistItems = {
+            mechanical: [
+                { id: 0, label: "Tank Integrity Check", desc: "Inspect structural physical seals of the 3x water tank units & bioreactor." },
+                { id: 1, label: "Bioreactor Motor Review", desc: "Verify bioreactor mechanical shaft alignment and rotating mechanism." },
+                { id: 2, label: "Pressure & Fluidic Leak Test", desc: "Check main high-pressure irrigation and peristaltic pump fluid couplers." }
+            ],
+            electrical: [
+                { id: 0, label: "Wire & Data Junction Integrity", desc: "Inspect and tighten main power connection terminations and secure routing." },
+                { id: 1, label: "Emergency Stop Evaluation", desc: "Test active physical emergency ON/OFF state overrides and power toggles." },
+                { id: 2, label: "Housing Thermal Check", desc: "Clean ventilation ducts and confirm smart controller cooling fan functions." }
+            ],
+            sensors: [
+                { id: 0, label: "pH Probe Buffer Calibration", desc: "Calibrate and verify pH sensors with reference solution set points." },
+                { id: 1, label: "Water Level Node Calibration", desc: "Verify level transmitter reading levels against literal water benchmarks." },
+                { id: 2, label: "Peristaltic Dosing Testing", desc: "Check fluid calibration rates on localized smart chemical dosing meters." },
+                { id: 3, label: "Dashboard Telemetry Audit", desc: "Assess smart switch responsiveness and local internet telemetry signal health." }
+            ]
+        };
+
+        // Initialize Firebase
+        async function setupFirebase() {
+            try {
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'nutron-maintenance-collab';
+                
+                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                    const firebaseConfig = JSON.parse(__firebase_config);
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+
+                    // Sign in securely
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            isFirebaseActive = true;
+                            updateSyncIndicator('active');
+                            startSyncListeners();
+                        } else {
+                            isFirebaseActive = false;
+                            updateSyncIndicator('offline');
+                        }
+                    });
+                } else {
+                    console.warn("Firebase configuration not supplied. Falling back to Local Storage mode.");
+                    loadLocalCache();
+                    isFirebaseActive = false;
+                    updateSyncIndicator('offline');
+                }
+            } catch (error) {
+                console.error("Firebase setup failed:", error);
+                loadLocalCache();
+                isFirebaseActive = false;
+                updateSyncIndicator('error');
+            }
+        }
+
+        // Initialize empty Firestore with baseline records
+        async function initializeFirestoreWithBaseline() {
+            if (!isFirebaseActive || !auth.currentUser) return;
+            try {
+                for (let i = 0; i < baselineFarms.length; i++) {
+                    const farm = baselineFarms[i];
+                    const docId = farm.refNo.replace('Ref No: ', '').trim();
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'farms_state', docId);
+                    await setDoc(docRef, farm);
+                }
+            } catch (e) {
+                console.error("Base initialization write error:", e);
+            }
+        }
+
+        // Start snapshot listeners for real-time CRUD syncing
+        function startSyncListeners() {
+            if (!isFirebaseActive || !auth.currentUser) return;
+
+            const collRef = collection(db, 'artifacts', appId, 'public', 'data', 'farms_state');
+
+            onSnapshot(collRef, (snapshot) => {
+                if (snapshot.empty) {
+                    initializeFirestoreWithBaseline();
+                    return;
+                }
+                
+                let updatedFarms = [];
+                snapshot.forEach((docSnap) => {
+                    const remoteData = docSnap.data();
+                    updatedFarms.push(remoteData);
+                });
+
+                // Keep ordering alphabetical/numerical on refNo
+                updatedFarms.sort((a, b) => a.refNo.localeCompare(b.refNo));
+                farms = updatedFarms;
+
+                if (currentFarmIndex >= farms.length) {
+                    currentFarmIndex = Math.max(0, farms.length - 1);
+                }
+
+                renderFarmList();
+                renderActiveFarmDetails();
+            }, (error) => {
+                console.error("Real-time sync error:", error);
+                updateSyncIndicator('error');
+            });
+        }
+
+        // Push state modification to database securely
+        async function syncFarmToCloud(index) {
+            const farm = farms[index];
+            if (!farm) return;
+            const docId = farm.refNo.replace('Ref No: ', '').trim();
+
+            if (isFirebaseActive && auth.currentUser) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'farms_state', docId);
+                    await setDoc(docRef, farm, { merge: true });
+                } catch (e) {
+                    console.error("Sync writing failed:", e);
+                    showToast("Sync error. Saving locally.", "danger");
+                    saveLocalCache();
+                }
+            } else {
+                saveLocalCache();
+            }
+        }
+
+        // Delete completely from Firestore
+        async function deleteFarmFromCloud(farm) {
+            const docId = farm.refNo.replace('Ref No: ', '').trim();
+            if (isFirebaseActive && auth.currentUser) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'farms_state', docId);
+                    await deleteDoc(docRef);
+                    showToast("Farm record deleted from server.", "success");
+                } catch (e) {
+                    console.error("Database deletion sync failed:", e);
+                    showToast("Error deleting on server.", "danger");
+                }
+            } else {
+                farms = farms.filter(f => f.refNo !== farm.refNo);
+                saveLocalCache();
+                if (currentFarmIndex >= farms.length) {
+                    currentFarmIndex = Math.max(0, farms.length - 1);
+                }
+                renderFarmList();
+                renderActiveFarmDetails();
+                showToast("Record deleted locally.", "success");
+            }
+        }
+
+        // Local Storage Cache handlers
+        function loadLocalCache() {
+            const cached = localStorage.getItem('nutron_farms_cache');
+            if (cached) {
+                try {
+                    farms = JSON.parse(cached);
+                } catch (err) {
+                    console.error("Local Cache parsing error, using baseline:", err);
+                    farms = JSON.parse(JSON.stringify(baselineFarms));
+                }
+            }
+            renderFarmList();
+            renderActiveFarmDetails();
+        }
+
+        function saveLocalCache() {
+            localStorage.setItem('nutron_farms_cache', JSON.stringify(farms));
+        }
+
+        // Clear and force reset database to baseline specs
+        async function resetDefaults() {
+            if (isFirebaseActive && auth.currentUser) {
+                // To safely overwrite, we must clear current collection or directly setDoc baseline records.
+                // We'll write the baseline records directly, overwriting matches.
+                for (let i = 0; i < baselineFarms.length; i++) {
+                    const farm = baselineFarms[i];
+                    const docId = farm.refNo.replace('Ref No: ', '').trim();
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'farms_state', docId);
+                    await setDoc(docRef, farm);
+                }
+                showToast("Database reset. Original presets overwritten.", "success");
+            } else {
+                farms = JSON.parse(JSON.stringify(baselineFarms));
+                saveLocalCache();
+                currentFarmIndex = 0;
+                renderFarmList();
+                renderActiveFarmDetails();
+                showToast("Database successfully restored to original parameters!", "success");
+            }
+            closeResetModal();
+        }
+
+        // Sync visual monitor feedback
+        function updateSyncIndicator(state) {
+            const dot = document.getElementById('sync-dot');
+            const text = document.getElementById('sync-text');
+
+            if (state === 'active') {
+                dot.className = "relative inline-flex rounded-full h-2 w-2 bg-emerald-500";
+                text.innerText = "Synced (Real-time)";
+                text.className = "text-[10px] font-extrabold uppercase tracking-wider text-emerald-400";
+            } else if (state === 'offline') {
+                dot.className = "relative inline-flex rounded-full h-2 w-2 bg-slate-500";
+                text.innerText = "Offline Mode (Local Cache)";
+                text.className = "text-[10px] font-extrabold uppercase tracking-wider text-slate-400";
+            } else {
+                dot.className = "relative inline-flex rounded-full h-2 w-2 bg-rose-500";
+                text.innerText = "Sync Interrupted";
+                text.className = "text-[10px] font-extrabold uppercase tracking-wider text-rose-400";
+            }
+        }
+
+        // On Load Initializer
+        window.addEventListener('load', async () => {
+            lucide.createIcons();
+            await setupFirebase();
+        });
+
+        // Calculate and display dynamic count downs for currently selected farm targets
+        function calculateActiveFarmCountdowns(farm) {
+            if (!farm) return;
+
+            const date6mVal = farm.date6m || '2026-04-30';
+            const date12mVal = farm.date12m || '2026-10-31';
+
+            const d6 = new Date(date6mVal);
+            const d12 = new Date(date12mVal);
+
+            // Print written target dates
+            document.getElementById('target-6m-text').innerText = d6.toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('target-12m-text').innerText = d12.toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            // 6-Month Countdown
+            const diff6 = d6 - SYSTEM_DATE;
+            const days6 = Math.ceil(diff6 / (1000 * 60 * 60 * 24));
+            const count6El = document.getElementById('countdown-6m');
+            
+            if (days6 < 0) {
+                count6El.innerText = "PASSED";
+                count6El.className = "text-sm md:text-lg font-extrabold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20 inline-block mt-1";
+            } else {
+                count6El.innerText = `${days6} Days`;
+                count6El.className = "text-xl font-black text-sky-400";
+            }
+
+            // 12-Month Countdown
+            const diff12 = d12 - SYSTEM_DATE;
+            const days12 = Math.ceil(diff12 / (1000 * 60 * 60 * 24));
+            const count12El = document.getElementById('countdown-12m');
+
+            if (days12 < 0) {
+                count12El.innerText = "PASSED";
+                count12El.className = "text-sm md:text-lg font-extrabold text-rose-400 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20 inline-block mt-1";
+            } else {
+                count12El.innerText = `${days12} Days`;
+                count12El.className = "text-xl font-black text-emerald-400";
+            }
+        }
+
+        // Render Sidebar Cards
+        window.renderFarmList = function renderFarmList() {
+            const container = document.getElementById('farm-list-container');
+            container.innerHTML = '';
+
+            if (farms.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-500 text-xs">
+                        No installations loaded.
+                    </div>
+                `;
+                return;
+            }
+            
+            farms.forEach((farm, index) => {
+                const isActive = index === currentFarmIndex;
+                const totalChecks6 = Object.values(farm.checks6m).flat().filter(Boolean).length;
+                const totalChecks12 = Object.values(farm.checks12m).flat().filter(Boolean).length;
+                
+                const percent6 = Math.round((totalChecks6 / 10) * 100);
+                const percent12 = Math.round((totalChecks12 / 10) * 100);
+
+                const activeClass = isActive 
+                    ? 'border-sky-500 bg-slate-800/80 shadow-md ring-1 ring-sky-500/20' 
+                    : 'border-slate-800 bg-slate-900/40 hover:bg-slate-800/40 hover:border-slate-700';
+
+                const st6Color = farm.completed6m ? 'text-emerald-400 bg-emerald-500/10' : 'text-amber-400 bg-amber-500/10';
+                const st6Text = farm.completed6m ? '6M Done' : '6M Pending';
+
+                const st12Color = farm.completed12m ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-400 bg-slate-800';
+                const st12Text = farm.completed12m ? '12M Done' : '12M Scheduled';
+
+                container.innerHTML += `
+                    <div onclick="selectFarm(${index})" class="border p-3.5 rounded-xl cursor-pointer transition-all ${activeClass}">
+                        <div class="flex items-start justify-between gap-2 mb-1.5">
+                            <h3 class="font-extrabold text-xs text-white leading-tight truncate max-w-[190px]">${farm.name}</h3>
+                            <span class="text-[10px] font-bold text-slate-500 flex-shrink-0">${farm.refNo.replace('Ref No: ', '')}</span>
+                        </div>
+                        
+                        <p class="text-[10px] text-slate-400 mb-2">${farm.crop} | ${farm.address.split(',')[1] || 'Malaysia'}</p>
+                        
+                        <div class="flex gap-1.5 items-center">
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border border-current ${st6Color}">${st6Text} (${percent6}%)</span>
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border border-current ${st12Color}">${st12Text} (${percent12}%)</span>
+                        </div>
+                    </div>
+                `;
+            });
+        };
+
+        // Selection Callback
+        window.selectFarm = function selectFarm(index) {
+            currentFarmIndex = index;
+            renderFarmList();
+            renderActiveFarmDetails();
+            showToast(`Switched active workspace to ${farms[index].name}`);
+        };
+
+        // Render Focus Details
+        window.renderActiveFarmDetails = function renderActiveFarmDetails() {
+            const activeContent = document.getElementById('workspace-active-content');
+            const emptyState = document.getElementById('workspace-empty-state');
+
+            if (farms.length === 0) {
+                activeContent.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                document.getElementById('countdown-6m').innerText = '--';
+                document.getElementById('countdown-12m').innerText = '--';
+                document.getElementById('target-6m-text').innerText = '--';
+                document.getElementById('target-12m-text').innerText = '--';
+                return;
+            }
+
+            activeContent.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+
+            const farm = farms[currentFarmIndex];
+
+            document.getElementById('active-farm-name').innerText = farm.name;
+            document.getElementById('active-farm-address').innerText = farm.address;
+            document.getElementById('active-farm-contact').innerText = farm.contact;
+            document.getElementById('active-crop').innerText = farm.crop;
+            document.getElementById('active-ref').innerText = farm.refNo;
+
+            // Deployment dates render formatting safely
+            if (farm.deploymentDate) {
+                const dep = new Date(farm.deploymentDate);
+                document.getElementById('active-farm-deployment-display').innerText = dep.toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' });
+            } else {
+                document.getElementById('active-farm-deployment-display').innerText = '--';
+            }
+
+            calculateActiveFarmCountdowns(farm);
+            switchInterval(activeInterval);
+        };
+
+        // Switch Interval Selection
+        window.switchInterval = function switchInterval(interval) {
+            activeInterval = interval;
+            
+            const btn6 = document.getElementById('tab-6month');
+            const btn12 = document.getElementById('tab-12month');
+
+            if (interval === '6month') {
+                btn6.className = "px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all bg-sky-500 text-slate-950 font-black";
+                btn12.className = "px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all text-slate-400 hover:text-slate-200";
+            } else {
+                btn12.className = "px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all bg-emerald-500 text-slate-950 font-black";
+                btn6.className = "px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all text-slate-400 hover:text-slate-200";
+            }
+
+            renderChecklist();
+            renderInputStates();
+            updateProgress();
+        };
+
+        // Checklist Generator
+        function renderChecklist() {
+            if (farms.length === 0) return;
+            const farm = farms[currentFarmIndex];
+            const dataset = activeInterval === '6month' ? farm.checks6m : farm.checks12m;
+
+            const makeItemHTML = (category, item, index) => {
+                const checked = dataset[category][index];
+                const bgBorder = checked ? 'border-sky-500/20 bg-sky-500/5' : 'border-slate-800 bg-slate-950/40';
+                
+                return `
+                    <label class="flex flex-col gap-1 p-2.5 rounded-xl border cursor-pointer select-none transition-all ${bgBorder}">
+                        <div class="flex items-start gap-2.5">
+                            <input type="checkbox" onchange="toggleCheck('${category}', ${index}, this.checked)" 
+                                   class="mt-1 w-4 h-4 rounded text-sky-500 bg-slate-900 border-slate-700 focus:ring-0 focus:ring-offset-0" 
+                                   ${checked ? 'checked' : ''}>
+                            <div class="flex-grow">
+                                <span class="text-xs font-bold text-slate-200 block leading-snug">${item.label}</span>
+                                <span class="text-[10px] text-slate-400 leading-normal block mt-0.5">${item.desc}</span>
+                            </div>
+                        </div>
+                    </label>
+                `;
+            };
+
+            document.getElementById('checklist-mechanical').innerHTML = checklistItems.mechanical.map((item, idx) => makeItemHTML('mechanical', item, idx)).join('');
+            document.getElementById('checklist-electrical').innerHTML = checklistItems.electrical.map((item, idx) => makeItemHTML('electrical', item, idx)).join('');
+            document.getElementById('checklist-sensors').innerHTML = checklistItems.sensors.map((item, idx) => makeItemHTML('sensors', item, idx)).join('');
+        }
+
+        // Live checkboxes trigger
+        window.toggleCheck = function toggleCheck(category, index, isChecked) {
+            const farm = farms[currentFarmIndex];
+            const dataset = activeInterval === '6month' ? farm.checks6m : farm.checks12m;
+
+            dataset[category][index] = isChecked;
+
+            event.target.closest('label').className = `flex flex-col gap-1 p-2.5 rounded-xl border cursor-pointer select-none transition-all ${
+                isChecked ? 'border-sky-500/20 bg-sky-500/5' : 'border-slate-800 bg-slate-950/40'
+            }`;
+
+            updateProgress();
+            updateCompletionBadge();
+            renderFarmList();
+            syncFarmToCloud(currentFarmIndex);
+        };
+
+        // Input value matching
+        function renderInputStates() {
+            if (farms.length === 0) return;
+            const farm = farms[currentFarmIndex];
+            const suffix = activeInterval === '6month' ? '6m' : '12m';
+
+            document.getElementById('tech-name').value = farm[`techName${suffix}`] || '';
+            document.getElementById('tech-signature').value = farm[`sign${suffix}`] || '';
+            document.getElementById('tech-notes').value = farm[`notes${suffix}`] || '';
+
+            updateCompletionBadge();
+        }
+
+        // Input sync with smart typing debounce
+        let debounceTimer = null;
+        window.saveInputsDebounced = function saveInputsDebounced() {
+            if (farms.length === 0) return;
+            const farm = farms[currentFarmIndex];
+            const suffix = activeInterval === '6month' ? '6m' : '12m';
+
+            farm[`techName${suffix}`] = document.getElementById('tech-name').value;
+            farm[`sign${suffix}`] = document.getElementById('tech-signature').value;
+            farm[`notes${suffix}`] = document.getElementById('tech-notes').value;
+
+            updateCompletionBadge();
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                syncFarmToCloud(currentFarmIndex);
+            }, 1000); // Debounce write execution 1s
+        };
+
+        // Progress Math
+        function updateProgress() {
+            if (farms.length === 0) return;
+            const farm = farms[currentFarmIndex];
+            const dataset = activeInterval === '6month' ? farm.checks6m : farm.checks12m;
+
+            const total = Object.values(dataset).flat().length;
+            const completed = Object.values(dataset).flat().filter(Boolean).length;
+            const percent = Math.round((completed / total) * 100);
+
+            document.getElementById('progress-text').innerText = `${completed} / ${total} Completed`;
+            document.getElementById('progress-percentage').innerText = `${percent}%`;
+
+            const circle = document.getElementById('progress-circle');
+            const offset = 125.6 - (125.6 * percent) / 100;
+            circle.style.strokeDashoffset = offset;
+
+            if (activeInterval === '6month') {
+                circle.setAttribute('class', "text-sky-400 transition-all duration-300");
+            } else {
+                circle.setAttribute('class', "text-emerald-400 transition-all duration-300");
+            }
+        }
+
+        // Completion status indicators
+        function updateCompletionBadge() {
+            if (farms.length === 0) return;
+            const farm = farms[currentFarmIndex];
+            const isCompleted = activeInterval === '6month' ? farm.completed6m : farm.completed12m;
+
+            const badge = document.getElementById('completion-badge');
+            const actionBtn = document.getElementById('mark-complete-btn');
+
+            if (isCompleted) {
+                badge.innerText = "VERIFIED COMPLETED";
+                badge.className = "px-2.5 py-1 rounded text-xs font-extrabold bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                
+                actionBtn.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reopen System File`;
+                actionBtn.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 bg-slate-950 hover:bg-slate-900 text-rose-400 border border-rose-500/10";
+            } else {
+                badge.innerText = "PENDING SYSTEM WORK";
+                badge.className = "px-2.5 py-1 rounded text-xs font-extrabold bg-amber-500/10 text-amber-400 border-amber-500/20";
+                
+                actionBtn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> Mark System Complete`;
+                actionBtn.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 border border-emerald-500/10";
+            }
+            lucide.createIcons();
+        }
+
+        // Complete/Reopen toggler
+        window.toggleCompletedState = function toggleCompletedState() {
+            const farm = farms[currentFarmIndex];
+            const prop = activeInterval === '6month' ? 'completed6m' : 'completed12m';
+
+            const nameVal = document.getElementById('tech-name').value.trim();
+            const signVal = document.getElementById('tech-signature').value.trim();
+
+            if (!farm[prop]) {
+                if (!nameVal || !signVal) {
+                    showToast("Error: Tech credentials required before sign-off.", "danger");
+                    document.getElementById('tech-name').focus();
+                    return;
+                }
+                farm[prop] = true;
+                showToast(`System verified & completed for ${farm.name}!`, 'success');
+            } else {
+                farm[prop] = false;
+                showToast(`System work file reopened for ${farm.name}`);
+            }
+
+            syncFarmToCloud(currentFarmIndex);
+            renderFarmList();
+            updateCompletionBadge();
+        };
+
+        // CREATE NEW FARM INSTALLATION TRIGGER
+        window.openAddFarmModal = function openAddFarmModal() {
+            isEditing = false;
+            document.getElementById('modal-title').innerText = "Add New Installation Node";
+            document.getElementById('form-farm-ref').readOnly = false;
+            document.getElementById('form-farm-ref').classList.remove('bg-slate-900', 'text-slate-500');
+
+            // Reset forms to fresh deployment presets
+            document.getElementById('form-farm-ref').value = "P643";
+            document.getElementById('form-farm-name').value = "";
+            document.getElementById('form-farm-crop').value = "Leafy Vegetables";
+            document.getElementById('form-farm-owner').value = "";
+            document.getElementById('form-farm-contact').value = "";
+            document.getElementById('form-farm-address').value = "";
+
+            // Standard target today defaults
+            const todayStr = SYSTEM_DATE.toISOString().split('T')[0];
+            document.getElementById('form-farm-deployment').value = todayStr;
+            handleDeploymentDateChange(todayStr);
+
+            document.getElementById('farm-modal').classList.remove('hidden');
+        };
+
+        // EDIT SELECTED FARM PARAMETERS
+        window.openEditFarmModal = function openEditFarmModal() {
+            if (farms.length === 0) return;
+            isEditing = true;
+            const farm = farms[currentFarmIndex];
+
+            document.getElementById('modal-title').innerText = `Edit Site Parameters (${farm.refNo})`;
+            
+            // Primary Ref key is locked during modification to preserve Firestore references
+            const refInput = document.getElementById('form-farm-ref');
+            refInput.value = farm.refNo.replace('Ref No: ', '').trim();
+            refInput.readOnly = true;
+            refInput.classList.add('bg-slate-900', 'text-slate-500');
+
+            document.getElementById('form-farm-name').value = farm.name || '';
+            document.getElementById('form-farm-crop').value = farm.crop || '';
+            document.getElementById('form-farm-owner').value = farm.owner || '';
+            document.getElementById('form-farm-contact').value = farm.contact || '';
+            document.getElementById('form-farm-address').value = farm.address || '';
+            
+            // Timeline dates match
+            document.getElementById('form-farm-deployment').value = farm.deploymentDate || '';
+            document.getElementById('form-farm-6m').value = farm.date6m || '';
+            document.getElementById('form-farm-12m').value = farm.date12m || '';
+
+            document.getElementById('farm-modal').classList.remove('hidden');
+        };
+
+        window.closeFarmModal = function closeFarmModal() {
+            document.getElementById('farm-modal').classList.add('hidden');
+        };
+
+        // Automatic suggest calculations (+6 calendar months / +12 calendar months)
+        window.handleDeploymentDateChange = function handleDeploymentDateChange(val) {
+            if (!val) return;
+            const depDate = new Date(val);
+
+            // Compute +6 Months
+            const date6 = new Date(depDate);
+            date6.setMonth(date6.getMonth() + 6);
+            
+            // Compute +12 Months
+            const date12 = new Date(depDate);
+            date12.setMonth(date12.getMonth() + 12);
+
+            document.getElementById('form-farm-6m').value = date6.toISOString().split('T')[0];
+            document.getElementById('form-farm-12m').value = date12.toISOString().split('T')[0];
+        };
+
+        // SAVE FORM STATE TRIGGER
+        window.saveFarmForm = function saveFarmForm() {
+            const rawRef = document.getElementById('form-farm-ref').value.trim();
+            const refNo = rawRef.startsWith("Ref No: ") ? rawRef : `Ref No: ${rawRef}`;
+            
+            const name = document.getElementById('form-farm-name').value.trim();
+            const crop = document.getElementById('form-farm-crop').value.trim();
+            const owner = document.getElementById('form-farm-owner').value.trim();
+            const contact = document.getElementById('form-farm-contact').value.trim();
+            const address = document.getElementById('form-farm-address').value.trim();
+            
+            const deploymentDate = document.getElementById('form-farm-deployment').value;
+            const date6m = document.getElementById('form-farm-6m').value;
+            const date12m = document.getElementById('form-farm-12m').value;
+
+            if (!rawRef || !name || !crop) {
+                showToast("Please fill in System Reference, Company Name, and Crop Type.", "danger");
+                return;
+            }
+
+            if (isEditing) {
+                // Modify existing state in-place
+                const farm = farms[currentFarmIndex];
+                farm.name = name;
+                farm.crop = crop;
+                farm.owner = owner;
+                farm.contact = contact;
+                farm.address = address;
+                farm.deploymentDate = deploymentDate;
+                farm.date6m = date6m;
+                farm.date12m = date12m;
+
+                syncFarmToCloud(currentFarmIndex);
+                showToast("Installation parameters updated successfully!", "success");
+            } else {
+                // Assert unique reference checks to prevent collision overwrite
+                const collision = farms.some(f => f.refNo.toLowerCase() === refNo.toLowerCase());
+                if (collision) {
+                    showToast(`Error: System ID ${rawRef} already exists.`, "danger");
+                    return;
+                }
+
+                // Construct full fresh checklist tracking block
+                const newFarm = {
+                    name,
+                    owner,
+                    address,
+                    crop,
+                    refNo,
+                    contact,
+                    deploymentDate,
+                    date6m,
+                    date12m,
+                    checks6m: {
+                        mechanical: [false, false, false],
+                        electrical: [false, false, false],
+                        sensors: [false, false, false, false]
+                    },
+                    checks12m: {
+                        mechanical: [false, false, false],
+                        electrical: [false, false, false],
+                        sensors: [false, false, false, false]
+                    },
+                    notes6m: "",
+                    notes12m: "",
+                    techName6m: "",
+                    techName12m: "",
+                    sign6m: "",
+                    sign12m: "",
+                    completed6m: false,
+                    completed12m: false
+                };
+
+                farms.push(newFarm);
+                currentFarmIndex = farms.length - 1;
+
+                syncFarmToCloud(currentFarmIndex);
+                showToast("New AgTech installation added!", "success");
+            }
+
+            closeFarmModal();
+            renderFarmList();
+            renderActiveFarmDetails();
+        };
+
+        // DELETE INSTALLATION PROCEDURES
+        window.confirmDeleteFarm = function confirmDeleteFarm() {
+            if (farms.length === 0) return;
+            const farm = farms[currentFarmIndex];
+            document.getElementById('delete-farm-name').innerText = farm.name;
+            document.getElementById('delete-modal').classList.remove('hidden');
+        };
+
+        window.closeDeleteModal = function closeDeleteModal() {
+            document.getElementById('delete-modal').classList.add('hidden');
+        };
+
+        window.executeDeleteFarm = function executeDeleteFarm() {
+            if (farms.length === 0) return;
+            const targetFarm = farms[currentFarmIndex];
+            deleteFarmFromCloud(targetFarm);
+            closeDeleteModal();
+        };
+
+        // Report verification generation
+        window.generateReportModal = function generateReportModal() {
+            if (farms.length === 0) return;
+            const farm = farms[currentFarmIndex];
+            const suffix = activeInterval === '6month' ? '6m' : '12m';
+
+            document.getElementById('report-date-checked').innerText = SYSTEM_DATE.toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('report-farm-name').innerText = farm.name;
+            document.getElementById('report-farm-address').innerText = farm.address;
+            document.getElementById('report-crop').innerText = farm.crop;
+            document.getElementById('report-category').innerText = activeInterval === '6month' ? '6-MONTH PREVENTIVE MAINTENANCE' : '12-MONTH PREVENTIVE WARRANTY AUDIT';
+            document.getElementById('report-ref').innerText = farm.refNo;
+
+            // Render written custom dates instead of statically preset timelines
+            if (farm.deploymentDate) {
+                const dep = new Date(farm.deploymentDate);
+                document.getElementById('report-deployment-date').innerText = dep.toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' });
+            } else {
+                document.getElementById('report-deployment-date').innerText = '--';
+            }
+
+            document.getElementById('report-name-tech').innerText = farm[`techName${suffix}`] || 'Unregistered Engineer';
+            document.getElementById('report-sign-tech').innerText = farm[`sign${suffix}`] || 'No physical signature logged';
+            document.getElementById('report-notes').innerText = farm[`notes${suffix}`] || 'All systems evaluated within target benchmark boundaries. Performance registers optimal.';
+
+            const summaryContainer = document.getElementById('report-checklist-summary');
+            const dataset = activeInterval === '6month' ? farm.checks6m : farm.checks12m;
+
+            const totalMech = dataset.mechanical.filter(Boolean).length;
+            const totalElec = dataset.electrical.filter(Boolean).length;
+            const totalSens = dataset.sensors.filter(Boolean).length;
+
+            summaryContainer.innerHTML = `
+                <div class="bg-slate-100 p-2.5 rounded">
+                    <p class="font-extrabold text-[10px] text-slate-800">MECHANICAL & PIPING</p>
+                    <p class="text-[14px] font-black mt-1">${totalMech} / 3 Complete</p>
+                    <p class="text-[8px] text-slate-500 mt-0.5">Physical tanks, bioreactor, & high pressure flow lines</p>
+                </div>
+                <div class="bg-slate-100 p-2.5 rounded">
+                    <p class="font-extrabold text-[10px] text-slate-800">POWER & COOLING</p>
+                    <p class="text-[14px] font-black mt-1">${totalElec} / 3 Complete</p>
+                    <p class="text-[8px] text-slate-500 mt-0.5">Wire terminations, Emergency Stop, & thermal vents</p>
+                </div>
+                <div class="bg-slate-100 p-2.5 rounded">
+                    <p class="font-extrabold text-[10px] text-slate-800">SENSORS & INTERNET</p>
+                    <p class="text-[14px] font-black mt-1">${totalSens} / 4 Complete</p>
+                    <p class="text-[8px] text-slate-500 mt-0.5">pH, levels, dosing rates, & telemetry packet checks</p>
+                </div>
+            `;
+
+            document.getElementById('report-modal').classList.remove('hidden');
+        };
+
+        window.closeReportModal = function closeReportModal() {
+            document.getElementById('report-modal').classList.add('hidden');
+        };
+
+        // Copier utility for Sandboxed document compliance
+        window.copyReportText = function copyReportText() {
+            const farm = farms[currentFarmIndex];
+            const suffix = activeInterval === '6month' ? '6m' : '12m';
+            const category = activeInterval === '6month' ? '6-Month PM' : '12-Month PM';
+
+            const output = `
+NUTRON SYSTEM MAINTENANCE DIAGNOSTIC REPORT
+==================================================
+Project: Digital Agtech Nationwide Deployment (DAND initiative)
+System Reference ID: ${farm.refNo}
+Audit Phase: ${category}
+Client: ${farm.name}
+Site Location: ${farm.address}
+Crop Configuration: ${farm.crop}
+Date: ${SYSTEM_DATE.toLocaleDateString()}
+
+DIAGNOSTIC NOTES & EVALUATIONS:
+--------------------------------------------------
+${farm[`notes${suffix}`] || 'No detailed observations recorded.'}
+
+Verified Sign-off Engineer: ${farm[`techName${suffix}`] || 'Not signed'} (${farm[`sign${suffix}`] || 'Unsigned'})
+Lead Administrator: Shahrir Salleh (Aerodyne Project Manager)
+==================================================
+            `;
+
+            const tempTextArea = document.createElement("textarea");
+            tempTextArea.value = output.trim();
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempTextArea);
+
+            const selection = window.getSelection();
+            if (selection) selection.removeAllRanges();
+
+            showToast("Report plain text copied to clipboard!", "success");
+        };
+
+        window.printReport = function printReport() {
+            window.print();
+        };
+
+        // Overlay dialog closures
+        window.confirmResetDefaults = function confirmResetDefaults() {
+            document.getElementById('reset-modal').classList.remove('hidden');
+        };
+        window.closeResetModal = function closeResetModal() {
+            document.getElementById('reset-modal').classList.add('hidden');
+        };
+        window.resetDefaults = resetDefaults;
+
+        // Toast feedback alerts
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-xl border text-xs font-semibold shadow-xl transition-all duration-300 transform translate-y-2 opacity-0 bg-slate-900 border-slate-800 ${type === 'success' ? 'text-emerald-400 border-emerald-500/20' : 'text-sky-400 border-sky-500/20'}`;
+            
+            const icon = type === 'success' ? 'check-circle' : 'info';
+            toast.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4 flex-shrink-0"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-10px]');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Live filtration search matching
+        window.filterFarms = function filterFarms() {
+            const query = document.getElementById('farm-search').value.toLowerCase();
+            const cards = document.getElementById('farm-list-container').children;
+
+            farms.forEach((farm, index) => {
+                const card = cards[index];
+                if (!card) return;
+                const match = farm.name.toLowerCase().includes(query) || 
+                              farm.crop.toLowerCase().includes(query) || 
+                              farm.address.toLowerCase().includes(query);
+                if (match) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        };
+    </script>
+</body>
+</html>
