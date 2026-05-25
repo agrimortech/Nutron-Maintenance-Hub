@@ -13,7 +13,7 @@
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
-        /* Custom Scrollbar for modern look */
+        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -81,6 +81,21 @@
         </div>
     </header>
 
+    <!-- DATABASE CONFIGURATION WARNING BANNER -->
+    <div id="config-warning-banner" class="bg-gradient-to-r from-amber-500/10 to-amber-600/5 border-b border-amber-500/20 px-6 py-3 hidden">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <div class="flex items-start gap-2.5 text-amber-300">
+                <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0 mt-0.5 sm:mt-0"></i>
+                <p class="leading-relaxed">
+                    <strong class="font-bold">Team Sync Status: Offline Mode.</strong> Currently saving data locally on this browser. To sync live updates with your team on GitHub, you need to paste your free Firebase project keys inside this HTML file's code.
+                </p>
+            </div>
+            <button onclick="openConfigGuideModal()" class="text-[10px] font-black uppercase tracking-wider bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 py-1.5 rounded-lg shadow-sm whitespace-nowrap transition-all">
+                How to Connect Sync
+            </button>
+        </div>
+    </div>
+
     <!-- MAIN CONTAINER -->
     <main class="max-w-7xl mx-auto px-4 py-6 md:py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
         
@@ -138,8 +153,27 @@
         <section class="lg:col-span-8 flex flex-col gap-6">
 
             <!-- TIMELINE COUNTDOWNS (Dynamically tied to selected farm targets) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 
+                <!-- 3-MONTH COUNTDOWN -->
+                <div class="bg-gradient-to-r from-slate-900 to-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-full blur-xl pointer-events-none"></div>
+                    <div class="flex items-start gap-3">
+                        <div class="bg-teal-500/10 p-2.5 rounded-xl border border-teal-500/20 text-teal-400">
+                            <i data-lucide="activity" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-teal-400">3-Month PM Target</span>
+                            <h4 class="font-extrabold text-sm text-slate-100" id="target-3m-phase-label">Calibration Check</h4>
+                            <p class="text-xs text-slate-400 mt-0.5" id="target-3m-text">--</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span id="countdown-3m" class="text-xl font-black block tracking-tight">--</span>
+                        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Status</span>
+                    </div>
+                </div>
+
                 <!-- 6-MONTH COUNTDOWN -->
                 <div class="bg-gradient-to-r from-slate-900 to-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 rounded-full blur-xl pointer-events-none"></div>
@@ -241,7 +275,11 @@
 
                     <!-- SCHEDULER SEGMENTED TABS -->
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex gap-1 w-full sm:w-auto">
+                        <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex flex-wrap gap-1 w-full sm:w-auto">
+                            <button onclick="switchInterval('3month')" id="tab-3month" 
+                                    class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                                <i data-lucide="activity" class="w-4 h-4"></i> 3-Month Check
+                            </button>
                             <button onclick="switchInterval('6month')" id="tab-6month" 
                                     class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all">
                                 <i data-lucide="calendar-check" class="w-4 h-4"></i> 6-Month Maintenance
@@ -357,6 +395,39 @@
 
     </main>
 
+    <!-- FIREBASE SYNC CONNECTION GUIDE MODAL -->
+    <div id="guide-modal" class="fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl overflow-hidden flex flex-col shadow-2xl">
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+                <div class="flex items-center gap-2 text-amber-400">
+                    <i data-lucide="database" class="w-5 h-5"></i>
+                    <h3 class="font-extrabold text-sm text-white">How to Enable Live Team Syncing</h3>
+                </div>
+                <button onclick="closeConfigGuideModal()" class="text-slate-400 hover:text-white p-1 bg-slate-850 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 flex flex-col gap-4 text-xs text-slate-300 leading-relaxed max-h-[70vh] overflow-y-auto">
+                <p>Follow these steps to connect this dashboard to a free database so your team's checkmarks and diagnostic notes update on all screens instantly:</p>
+                <ol class="list-decimal pl-4 flex flex-col gap-3 text-slate-200">
+                    <li>Go to the <a href="https://console.firebase.google.com/" target="_blank" class="text-sky-400 hover:underline">Firebase Console</a> and log in with your Google account.</li>
+                    <li>Click <strong class="text-white">Add project</strong> and name it (e.g. <code class="bg-slate-950 px-1.5 py-0.5 rounded text-amber-400 text-[11px]">Nutron-Hub</code>).</li>
+                    <li>Once loaded, go to <strong class="text-white">Project Shortcuts / Build</strong> and click <strong class="text-white">Firestore Database</strong>. Click <strong class="text-white">Create database</strong>. Choose <strong class="text-white">Start in test mode</strong> (this lets your team write updates without restrictions).</li>
+                    <li>Return to your project homepage, click the Web platform icon (<strong class="text-sky-400">&lt;/&gt;</strong>) to register an app. Copy the <code class="bg-slate-950 px-1.5 py-0.5 rounded text-emerald-400 text-[11px]">const firebaseConfig = { ... }</code> snippet.</li>
+                    <li>Open this <code class="text-sky-300 font-mono">index.html</code> file in any code editor (like VS Code, Notepad++, or text editor).</li>
+                    <li>Locate line <strong class="text-white">430</strong> in this file, find <code class="text-amber-400">const YOUR_CUSTOM_FIREBASE_CONFIG</code>, and paste your credentials there.</li>
+                    <li>Save, and upload back to your GitHub repository!</li>
+                </ol>
+                <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl mt-2 text-slate-400 text-[11px]">
+                    Note: Your database path runs securely on the compliant route <code class="text-slate-200">/artifacts/{appId}/public/data/farms_state</code> to protect cross-device transactions.
+                </div>
+            </div>
+            <div class="p-4 bg-slate-950 border-t border-slate-800 flex justify-end">
+                <button onclick="closeConfigGuideModal()" class="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-lg text-xs font-black shadow-md">Got It!</button>
+            </div>
+        </div>
+    </div>
+
     <!-- CREATE / EDIT INSTALLATION MODAL -->
     <div id="farm-modal" class="fixed inset-0 bg-slate-950/85 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl overflow-hidden flex flex-col shadow-2xl">
@@ -412,10 +483,15 @@
 
                 <div class="border-t border-slate-800 pt-4 mt-2">
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-3">Timeline Targets Configuration</span>
-                    <div class="grid grid-cols-3 gap-3">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div>
                             <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Deployment Date</label>
                             <input type="date" id="form-farm-deployment" onchange="handleDeploymentDateChange(this.value)"
+                                   class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">3-Month Target</label>
+                            <input type="date" id="form-farm-3m" 
                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
                         </div>
                         <div>
@@ -429,7 +505,7 @@
                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
                         </div>
                     </div>
-                    <p class="text-[9px] text-slate-500 mt-2 italic">Altering the Deployment Date automatically calculates 6 & 12-month suggestions, which can be modified manually.</p>
+                    <p class="text-[9px] text-slate-500 mt-2 italic">Altering the Deployment Date automatically suggests 3, 6, & 12-month dates, which can be modified manually.</p>
                 </div>
             </div>
             <!-- Footer Controls -->
@@ -602,16 +678,29 @@
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global state and constants
+        // ==========================================
+        // ⚙️ TEAM SYNC CONFIGURATION (FIREBASE)
+        // ==========================================
+        // Paste your own Firebase Web App configuration keys here to activate team-wide syncing:
+        const YOUR_CUSTOM_FIREBASE_CONFIG = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        // ==========================================
+
         const SYSTEM_DATE = new Date('2026-05-25');
 
         let currentFarmIndex = 0;
-        let activeInterval = '6month';
+        let activeInterval = '3month'; // Default view is now 3-Month interval
         let isFirebaseActive = false;
         let db = null;
         let auth = null;
         let appId = "default-app-id";
-        let isEditing = false; // State track for Add vs Edit modal forms
+        let isEditing = false; 
 
         // Baseline Data presets representing deployment file records with target dates
         const baselineFarms = [
@@ -623,8 +712,14 @@
                 refNo: "Ref No: P64341",
                 contact: "Tee Liang Kok (Director)",
                 deploymentDate: "2025-10-31",
+                date3m: "2026-01-31",
                 date6m: "2026-04-30",
                 date12m: "2026-10-31",
+                checks3m: {
+                    mechanical: [true, true, true],
+                    electrical: [true, true, true],
+                    sensors: [true, true, true, true]
+                },
                 checks6m: {
                     mechanical: [true, true, true],
                     electrical: [true, true, true],
@@ -635,12 +730,16 @@
                     electrical: [false, false, false],
                     sensors: [false, false, false, false]
                 },
+                notes3m: "First 3-Month maintenance successfully cleared. Flow meters backwashed. Electro-valves inspected.",
                 notes6m: "System inspected. Highly functional water delivery cycle. Cleared bio-sediments inside Tank Unit 2. Dosing meters calibrated accurately.",
                 notes12m: "",
+                techName3m: "Farhan Iskandar",
                 techName6m: "Farhan Iskandar",
                 techName12m: "",
+                sign3m: "Farhan.I",
                 sign6m: "Farhan.I",
                 sign12m: "",
+                completed3m: true,
                 completed6m: true,
                 completed12m: false
             },
@@ -652,8 +751,14 @@
                 refNo: "Ref No: P64342",
                 contact: "Ng Chee Hoe (Director)",
                 deploymentDate: "2025-10-31",
+                date3m: "2026-01-31",
                 date6m: "2026-04-30",
                 date12m: "2026-10-31",
+                checks3m: {
+                    mechanical: [true, true, true],
+                    electrical: [true, true, true],
+                    sensors: [true, true, true, true]
+                },
                 checks6m: {
                     mechanical: [true, true, true],
                     electrical: [true, true, false],
@@ -664,12 +769,16 @@
                     electrical: [false, false, false],
                     sensors: [false, false, false, false]
                 },
+                notes3m: "3-Month routine calibrations cleared. Readjusted pH probe zero-offset parameters.",
                 notes6m: "Mechanical components secure. High performance registered. Emergency Stop system fully verified. Main cooling fan has some slight dust accumulation, recommends cleaning in 12-Month PM. Calibration offset of 0.2 pH adjusted.",
                 notes12m: "",
+                techName3m: "Ahmad Kamil",
                 techName6m: "Ahmad Kamil",
                 techName12m: "",
+                sign3m: "Kamil.A",
                 sign6m: "Kamil.A",
                 sign12m: "",
+                completed3m: true,
                 completed6m: false,
                 completed12m: false
             },
@@ -681,8 +790,14 @@
                 refNo: "Ref No: P64343",
                 contact: "Thervarmuthes A/L Varatharaju (Owner)",
                 deploymentDate: "2025-10-31",
+                date3m: "2026-01-31",
                 date6m: "2026-04-30",
                 date12m: "2026-10-31",
+                checks3m: {
+                    mechanical: [false, false, false],
+                    electrical: [false, false, false],
+                    sensors: [false, false, false, false]
+                },
                 checks6m: {
                     mechanical: [false, false, false],
                     electrical: [false, false, false],
@@ -693,12 +808,16 @@
                     electrical: [false, false, false],
                     sensors: [false, false, false, false]
                 },
+                notes3m: "",
                 notes6m: "",
                 notes12m: "",
+                techName3m: "",
                 techName6m: "",
                 techName12m: "",
+                sign3m: "",
                 sign6m: "",
                 sign12m: "",
+                completed3m: false,
                 completed6m: false,
                 completed12m: false
             },
@@ -710,8 +829,14 @@
                 refNo: "Ref No: P64344",
                 contact: "Tan Yeong Thai (Director)",
                 deploymentDate: "2025-10-31",
+                date3m: "2026-01-31",
                 date6m: "2026-04-30",
                 date12m: "2026-10-31",
+                checks3m: {
+                    mechanical: [true, true, true],
+                    electrical: [true, true, true],
+                    sensors: [true, true, true, true]
+                },
                 checks6m: {
                     mechanical: [true, true, true],
                     electrical: [true, true, true],
@@ -722,12 +847,16 @@
                     electrical: [false, false, false],
                     sensors: [false, false, false, false]
                 },
+                notes3m: "Sensors and mechanical nodes operating in highly responsive configuration parameters.",
                 notes6m: "All elements audited. High accuracy telemetry transmission rates (packet confirmation every 10 sec). Bioreactor performance meets high delivery metrics.",
                 notes12m: "",
+                techName3m: "Farhan Iskandar",
                 techName6m: "Farhan Iskandar",
                 techName12m: "",
+                sign3m: "Farhan.I",
                 sign6m: "Farhan.I",
                 sign12m: "",
+                completed3m: true,
                 completed6m: true,
                 completed12m: false
             },
@@ -739,8 +868,14 @@
                 refNo: "Ref No: P64345",
                 contact: "Hafidz Bin Arifin (Founder / Figs Arus Sdn Bhd)",
                 deploymentDate: "2025-10-31",
+                date3m: "2026-01-31",
                 date6m: "2026-04-30",
                 date12m: "2026-10-31",
+                checks3m: {
+                    mechanical: [true, true, true],
+                    electrical: [true, true, true],
+                    sensors: [true, true, true, true]
+                },
                 checks6m: {
                     mechanical: [true, true, true],
                     electrical: [true, true, true],
@@ -751,12 +886,16 @@
                     electrical: [false, false, false],
                     sensors: [false, false, false, false]
                 },
+                notes3m: "Initial physical setup and calibration routine verified. Excellent tank levels and liquid properties.",
                 notes6m: "Verified with lead operators on-site. Dosing pump flow rates confirmed matching standard values. Calibration set points secured.",
                 notes12m: "",
+                techName3m: "Sufian Shafi",
                 techName6m: "Sufian Shafi",
                 techName12m: "",
+                sign3m: "Sufian.S",
                 sign6m: "Sufian.S",
                 sign12m: "",
+                completed3m: true,
                 completed6m: true,
                 completed12m: false
             }
@@ -784,14 +923,27 @@
             ]
         };
 
+        // Determine if customized configurations are supplied
+        function hasCustomConfig() {
+            return YOUR_CUSTOM_FIREBASE_CONFIG && 
+                   YOUR_CUSTOM_FIREBASE_CONFIG.apiKey && 
+                   YOUR_CUSTOM_FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY";
+        }
+
         // Initialize Firebase
         async function setupFirebase() {
             try {
                 appId = typeof __app_id !== 'undefined' ? __app_id : 'nutron-maintenance-collab';
                 
-                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                    const firebaseConfig = JSON.parse(__firebase_config);
-                    const app = initializeApp(firebaseConfig);
+                let activeConfig = null;
+                if (hasCustomConfig()) {
+                    activeConfig = YOUR_CUSTOM_FIREBASE_CONFIG;
+                } else if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                    activeConfig = JSON.parse(__firebase_config);
+                }
+
+                if (activeConfig) {
+                    const app = initializeApp(activeConfig);
                     auth = getAuth(app);
                     db = getFirestore(app);
 
@@ -806,24 +958,28 @@
                         if (user) {
                             isFirebaseActive = true;
                             updateSyncIndicator('active');
+                            document.getElementById('config-warning-banner').classList.add('hidden');
                             startSyncListeners();
                         } else {
-                            isFirebaseActive = false;
-                            updateSyncIndicator('offline');
+                            handleOfflineFallback();
                         }
                     });
                 } else {
-                    console.warn("Firebase configuration not supplied. Falling back to Local Storage mode.");
-                    loadLocalCache();
-                    isFirebaseActive = false;
-                    updateSyncIndicator('offline');
+                    handleOfflineFallback();
                 }
             } catch (error) {
                 console.error("Firebase setup failed:", error);
-                loadLocalCache();
-                isFirebaseActive = false;
+                handleOfflineFallback();
                 updateSyncIndicator('error');
             }
+        }
+
+        function handleOfflineFallback() {
+            console.warn("Firebase configuration not supplied or failed. Falling back to Local Storage mode.");
+            loadLocalCache();
+            isFirebaseActive = false;
+            updateSyncIndicator('offline');
+            document.getElementById('config-warning-banner').classList.remove('hidden');
         }
 
         // Initialize empty Firestore with baseline records
@@ -941,8 +1097,6 @@
         // Clear and force reset database to baseline specs
         async function resetDefaults() {
             if (isFirebaseActive && auth.currentUser) {
-                // To safely overwrite, we must clear current collection or directly setDoc baseline records.
-                // We'll write the baseline records directly, overwriting matches.
                 for (let i = 0; i < baselineFarms.length; i++) {
                     const farm = baselineFarms[i];
                     const docId = farm.refNo.replace('Ref No: ', '').trim();
@@ -991,40 +1145,53 @@
         function calculateActiveFarmCountdowns(farm) {
             if (!farm) return;
 
+            const date3mVal = farm.date3m || '2026-01-31';
             const date6mVal = farm.date6m || '2026-04-30';
             const date12mVal = farm.date12m || '2026-10-31';
 
+            const d3 = new Date(date3mVal);
             const d6 = new Date(date6mVal);
             const d12 = new Date(date12mVal);
 
             // Print written target dates
+            document.getElementById('target-3m-text').innerText = d3.toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' });
             document.getElementById('target-6m-text').innerText = d6.toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' });
             document.getElementById('target-12m-text').innerText = d12.toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            // 3-Month Countdown
+            const diff3 = d3 - SYSTEM_DATE;
+            const days3 = Math.ceil(diff3 / (1000 * 60 * 60 * 24));
+            const count3El = document.getElementById('countdown-3m');
+            if (days3 < 0) {
+                count3El.innerText = "PASSED";
+                count3El.setAttribute('class', "text-sm md:text-lg font-extrabold text-teal-400 bg-teal-500/10 px-2 py-1 rounded border border-teal-500/20 inline-block mt-1");
+            } else {
+                count3El.innerText = `${days3} Days`;
+                count3El.setAttribute('class', "text-xl font-black text-teal-400");
+            }
 
             // 6-Month Countdown
             const diff6 = d6 - SYSTEM_DATE;
             const days6 = Math.ceil(diff6 / (1000 * 60 * 60 * 24));
             const count6El = document.getElementById('countdown-6m');
-            
             if (days6 < 0) {
                 count6El.innerText = "PASSED";
-                count6El.className = "text-sm md:text-lg font-extrabold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20 inline-block mt-1";
+                count6El.setAttribute('class', "text-sm md:text-lg font-extrabold text-sky-400 bg-sky-500/10 px-2 py-1 rounded border border-sky-500/20 inline-block mt-1");
             } else {
                 count6El.innerText = `${days6} Days`;
-                count6El.className = "text-xl font-black text-sky-400";
+                count6El.setAttribute('class', "text-xl font-black text-sky-400");
             }
 
             // 12-Month Countdown
             const diff12 = d12 - SYSTEM_DATE;
             const days12 = Math.ceil(diff12 / (1000 * 60 * 60 * 24));
             const count12El = document.getElementById('countdown-12m');
-
             if (days12 < 0) {
                 count12El.innerText = "PASSED";
-                count12El.className = "text-sm md:text-lg font-extrabold text-rose-400 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20 inline-block mt-1";
+                count12El.setAttribute('class', "text-sm md:text-lg font-extrabold text-rose-400 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20 inline-block mt-1");
             } else {
                 count12El.innerText = `${days12} Days`;
-                count12El.className = "text-xl font-black text-emerald-400";
+                count12El.setAttribute('class', "text-xl font-black text-emerald-400");
             }
         }
 
@@ -1044,9 +1211,11 @@
             
             farms.forEach((farm, index) => {
                 const isActive = index === currentFarmIndex;
+                const totalChecks3 = Object.values(farm.checks3m || {mechanical: [], electrical: [], sensors: []}).flat().filter(Boolean).length;
                 const totalChecks6 = Object.values(farm.checks6m).flat().filter(Boolean).length;
                 const totalChecks12 = Object.values(farm.checks12m).flat().filter(Boolean).length;
                 
+                const percent3 = Math.round((totalChecks3 / 10) * 100);
                 const percent6 = Math.round((totalChecks6 / 10) * 100);
                 const percent12 = Math.round((totalChecks12 / 10) * 100);
 
@@ -1054,10 +1223,13 @@
                     ? 'border-sky-500 bg-slate-800/80 shadow-md ring-1 ring-sky-500/20' 
                     : 'border-slate-800 bg-slate-900/40 hover:bg-slate-800/40 hover:border-slate-700';
 
-                const st6Color = farm.completed6m ? 'text-emerald-400 bg-emerald-500/10' : 'text-amber-400 bg-amber-500/10';
+                const st3Color = farm.completed3m ? 'text-teal-400 bg-teal-500/10 border-teal-500/20' : 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                const st3Text = farm.completed3m ? '3M Done' : '3M Pending';
+
+                const st6Color = farm.completed6m ? 'text-sky-400 bg-sky-500/10 border-sky-500/20' : 'text-amber-400 bg-amber-500/10 border-amber-500/20';
                 const st6Text = farm.completed6m ? '6M Done' : '6M Pending';
 
-                const st12Color = farm.completed12m ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-400 bg-slate-800';
+                const st12Color = farm.completed12m ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-slate-400 bg-slate-800 border-slate-700';
                 const st12Text = farm.completed12m ? '12M Done' : '12M Scheduled';
 
                 container.innerHTML += `
@@ -1069,9 +1241,10 @@
                         
                         <p class="text-[10px] text-slate-400 mb-2">${farm.crop} | ${farm.address.split(',')[1] || 'Malaysia'}</p>
                         
-                        <div class="flex gap-1.5 items-center">
-                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border border-current ${st6Color}">${st6Text} (${percent6}%)</span>
-                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border border-current ${st12Color}">${st12Text} (${percent12}%)</span>
+                        <div class="flex flex-wrap gap-1.5 items-center">
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border ${st3Color}">${st3Text} (${percent3}%)</span>
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border ${st6Color}">${st6Text} (${percent6}%)</span>
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border ${st12Color}">${st12Text} (${percent12}%)</span>
                         </div>
                     </div>
                 `;
@@ -1094,8 +1267,10 @@
             if (farms.length === 0) {
                 activeContent.classList.add('hidden');
                 emptyState.classList.remove('hidden');
+                document.getElementById('countdown-3m').innerText = '--';
                 document.getElementById('countdown-6m').innerText = '--';
                 document.getElementById('countdown-12m').innerText = '--';
+                document.getElementById('target-3m-text').innerText = '--';
                 document.getElementById('target-6m-text').innerText = '--';
                 document.getElementById('target-12m-text').innerText = '--';
                 return;
@@ -1128,15 +1303,21 @@
         window.switchInterval = function switchInterval(interval) {
             activeInterval = interval;
             
+            const btn3 = document.getElementById('tab-3month');
             const btn6 = document.getElementById('tab-6month');
             const btn12 = document.getElementById('tab-12month');
 
-            if (interval === '6month') {
-                btn6.className = "px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all bg-sky-500 text-slate-950 font-black";
-                btn12.className = "px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all text-slate-400 hover:text-slate-200";
+            // Reset class lists of all buttons
+            btn3.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all text-slate-400 hover:text-slate-200";
+            btn6.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all text-slate-400 hover:text-slate-200";
+            btn12.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all text-slate-400 hover:text-slate-200";
+
+            if (interval === '3month') {
+                btn3.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all bg-teal-500 text-slate-950 font-black";
+            } else if (interval === '6month') {
+                btn6.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all bg-sky-500 text-slate-950 font-black";
             } else {
-                btn12.className = "px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all bg-emerald-500 text-slate-950 font-black";
-                btn6.className = "px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all text-slate-400 hover:text-slate-200";
+                btn12.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all bg-emerald-500 text-slate-950 font-black";
             }
 
             renderChecklist();
@@ -1148,7 +1329,15 @@
         function renderChecklist() {
             if (farms.length === 0) return;
             const farm = farms[currentFarmIndex];
-            const dataset = activeInterval === '6month' ? farm.checks6m : farm.checks12m;
+            
+            let dataset;
+            if (activeInterval === '3month') {
+                dataset = farm.checks3m || { mechanical: [false, false, false], electrical: [false, false, false], sensors: [false, false, false, false] };
+            } else if (activeInterval === '6month') {
+                dataset = farm.checks6m;
+            } else {
+                dataset = farm.checks12m;
+            }
 
             const makeItemHTML = (category, item, index) => {
                 const checked = dataset[category][index];
@@ -1177,7 +1366,18 @@
         // Live checkboxes trigger
         window.toggleCheck = function toggleCheck(category, index, isChecked) {
             const farm = farms[currentFarmIndex];
-            const dataset = activeInterval === '6month' ? farm.checks6m : farm.checks12m;
+            
+            let dataset;
+            if (activeInterval === '3month') {
+                if (!farm.checks3m) {
+                    farm.checks3m = { mechanical: [false, false, false], electrical: [false, false, false], sensors: [false, false, false, false] };
+                }
+                dataset = farm.checks3m;
+            } else if (activeInterval === '6month') {
+                dataset = farm.checks6m;
+            } else {
+                dataset = farm.checks12m;
+            }
 
             dataset[category][index] = isChecked;
 
@@ -1195,7 +1395,7 @@
         function renderInputStates() {
             if (farms.length === 0) return;
             const farm = farms[currentFarmIndex];
-            const suffix = activeInterval === '6month' ? '6m' : '12m';
+            const suffix = activeInterval === '3month' ? '3m' : (activeInterval === '6month' ? '6m' : '12m');
 
             document.getElementById('tech-name').value = farm[`techName${suffix}`] || '';
             document.getElementById('tech-signature').value = farm[`sign${suffix}`] || '';
@@ -1209,7 +1409,7 @@
         window.saveInputsDebounced = function saveInputsDebounced() {
             if (farms.length === 0) return;
             const farm = farms[currentFarmIndex];
-            const suffix = activeInterval === '6month' ? '6m' : '12m';
+            const suffix = activeInterval === '3month' ? '3m' : (activeInterval === '6month' ? '6m' : '12m');
 
             farm[`techName${suffix}`] = document.getElementById('tech-name').value;
             farm[`sign${suffix}`] = document.getElementById('tech-signature').value;
@@ -1220,14 +1420,22 @@
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 syncFarmToCloud(currentFarmIndex);
-            }, 1000); // Debounce write execution 1s
+            }, 1000); 
         };
 
         // Progress Math
         function updateProgress() {
             if (farms.length === 0) return;
             const farm = farms[currentFarmIndex];
-            const dataset = activeInterval === '6month' ? farm.checks6m : farm.checks12m;
+            
+            let dataset;
+            if (activeInterval === '3month') {
+                dataset = farm.checks3m || { mechanical: [false, false, false], electrical: [false, false, false], sensors: [false, false, false, false] };
+            } else if (activeInterval === '6month') {
+                dataset = farm.checks6m;
+            } else {
+                dataset = farm.checks12m;
+            }
 
             const total = Object.values(dataset).flat().length;
             const completed = Object.values(dataset).flat().filter(Boolean).length;
@@ -1240,7 +1448,9 @@
             const offset = 125.6 - (125.6 * percent) / 100;
             circle.style.strokeDashoffset = offset;
 
-            if (activeInterval === '6month') {
+            if (activeInterval === '3month') {
+                circle.setAttribute('class', "text-teal-400 transition-all duration-300");
+            } else if (activeInterval === '6month') {
                 circle.setAttribute('class', "text-sky-400 transition-all duration-300");
             } else {
                 circle.setAttribute('class', "text-emerald-400 transition-all duration-300");
@@ -1251,7 +1461,7 @@
         function updateCompletionBadge() {
             if (farms.length === 0) return;
             const farm = farms[currentFarmIndex];
-            const isCompleted = activeInterval === '6month' ? farm.completed6m : farm.completed12m;
+            const isCompleted = activeInterval === '3month' ? farm.completed3m : (activeInterval === '6month' ? farm.completed6m : farm.completed12m);
 
             const badge = document.getElementById('completion-badge');
             const actionBtn = document.getElementById('mark-complete-btn');
@@ -1275,7 +1485,7 @@
         // Complete/Reopen toggler
         window.toggleCompletedState = function toggleCompletedState() {
             const farm = farms[currentFarmIndex];
-            const prop = activeInterval === '6month' ? 'completed6m' : 'completed12m';
+            const prop = activeInterval === '3month' ? 'completed3m' : (activeInterval === '6month' ? 'completed6m' : 'completed12m');
 
             const nameVal = document.getElementById('tech-name').value.trim();
             const signVal = document.getElementById('tech-signature').value.trim();
@@ -1343,6 +1553,7 @@
             
             // Timeline dates match
             document.getElementById('form-farm-deployment').value = farm.deploymentDate || '';
+            document.getElementById('form-farm-3m').value = farm.date3m || '';
             document.getElementById('form-farm-6m').value = farm.date6m || '';
             document.getElementById('form-farm-12m').value = farm.date12m || '';
 
@@ -1353,10 +1564,14 @@
             document.getElementById('farm-modal').classList.add('hidden');
         };
 
-        // Automatic suggest calculations (+6 calendar months / +12 calendar months)
+        // Automatic suggest calculations (+3, +6 calendar months / +12 calendar months)
         window.handleDeploymentDateChange = function handleDeploymentDateChange(val) {
             if (!val) return;
             const depDate = new Date(val);
+
+            // Compute +3 Months
+            const date3 = new Date(depDate);
+            date3.setMonth(date3.getMonth() + 3);
 
             // Compute +6 Months
             const date6 = new Date(depDate);
@@ -1366,6 +1581,7 @@
             const date12 = new Date(depDate);
             date12.setMonth(date12.getMonth() + 12);
 
+            document.getElementById('form-farm-3m').value = date3.toISOString().split('T')[0];
             document.getElementById('form-farm-6m').value = date6.toISOString().split('T')[0];
             document.getElementById('form-farm-12m').value = date12.toISOString().split('T')[0];
         };
@@ -1382,6 +1598,7 @@
             const address = document.getElementById('form-farm-address').value.trim();
             
             const deploymentDate = document.getElementById('form-farm-deployment').value;
+            const date3m = document.getElementById('form-farm-3m').value;
             const date6m = document.getElementById('form-farm-6m').value;
             const date12m = document.getElementById('form-farm-12m').value;
 
@@ -1399,6 +1616,7 @@
                 farm.contact = contact;
                 farm.address = address;
                 farm.deploymentDate = deploymentDate;
+                farm.date3m = date3m;
                 farm.date6m = date6m;
                 farm.date12m = date12m;
 
@@ -1421,8 +1639,14 @@
                     refNo,
                     contact,
                     deploymentDate,
+                    date3m,
                     date6m,
                     date12m,
+                    checks3m: {
+                        mechanical: [false, false, false],
+                        electrical: [false, false, false],
+                        sensors: [false, false, false, false]
+                    },
                     checks6m: {
                         mechanical: [false, false, false],
                         electrical: [false, false, false],
@@ -1433,12 +1657,16 @@
                         electrical: [false, false, false],
                         sensors: [false, false, false, false]
                     },
+                    notes3m: "",
                     notes6m: "",
                     notes12m: "",
+                    techName3m: "",
                     techName6m: "",
                     techName12m: "",
+                    sign3m: "",
                     sign6m: "",
                     sign12m: "",
+                    completed3m: false,
                     completed6m: false,
                     completed12m: false
                 };
@@ -1478,13 +1706,22 @@
         window.generateReportModal = function generateReportModal() {
             if (farms.length === 0) return;
             const farm = farms[currentFarmIndex];
-            const suffix = activeInterval === '6month' ? '6m' : '12m';
+            const suffix = activeInterval === '3month' ? '3m' : (activeInterval === '6month' ? '6m' : '12m');
 
             document.getElementById('report-date-checked').innerText = SYSTEM_DATE.toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' });
             document.getElementById('report-farm-name').innerText = farm.name;
             document.getElementById('report-farm-address').innerText = farm.address;
             document.getElementById('report-crop').innerText = farm.crop;
-            document.getElementById('report-category').innerText = activeInterval === '6month' ? '6-MONTH PREVENTIVE MAINTENANCE' : '12-MONTH PREVENTIVE WARRANTY AUDIT';
+            
+            let catTitle = '';
+            if (activeInterval === '3month') {
+                catTitle = '3-MONTH CALIBRATION & PM AUDIT';
+            } else if (activeInterval === '6month') {
+                catTitle = '6-MONTH PREVENTIVE MAINTENANCE';
+            } else {
+                catTitle = '12-MONTH PREVENTIVE WARRANTY AUDIT';
+            }
+            document.getElementById('report-category').innerText = catTitle;
             document.getElementById('report-ref').innerText = farm.refNo;
 
             // Render written custom dates instead of statically preset timelines
@@ -1500,7 +1737,15 @@
             document.getElementById('report-notes').innerText = farm[`notes${suffix}`] || 'All systems evaluated within target benchmark boundaries. Performance registers optimal.';
 
             const summaryContainer = document.getElementById('report-checklist-summary');
-            const dataset = activeInterval === '6month' ? farm.checks6m : farm.checks12m;
+            
+            let dataset;
+            if (activeInterval === '3month') {
+                dataset = farm.checks3m || { mechanical: [false, false, false], electrical: [false, false, false], sensors: [false, false, false, false] };
+            } else if (activeInterval === '6month') {
+                dataset = farm.checks6m;
+            } else {
+                dataset = farm.checks12m;
+            }
 
             const totalMech = dataset.mechanical.filter(Boolean).length;
             const totalElec = dataset.electrical.filter(Boolean).length;
@@ -1534,8 +1779,8 @@
         // Copier utility for Sandboxed document compliance
         window.copyReportText = function copyReportText() {
             const farm = farms[currentFarmIndex];
-            const suffix = activeInterval === '6month' ? '6m' : '12m';
-            const category = activeInterval === '6month' ? '6-Month PM' : '12-Month PM';
+            const suffix = activeInterval === '3month' ? '3m' : (activeInterval === '6month' ? '6m' : '12m');
+            const category = activeInterval === '3month' ? '3-Month PM' : (activeInterval === '6month' ? '6-Month PM' : '12-Month PM');
 
             const output = `
 NUTRON SYSTEM MAINTENANCE DIAGNOSTIC REPORT
@@ -1582,6 +1827,14 @@ Lead Administrator: Shahrir Salleh (Aerodyne Project Manager)
             document.getElementById('reset-modal').classList.add('hidden');
         };
         window.resetDefaults = resetDefaults;
+
+        // Configuration guide helper triggers
+        window.openConfigGuideModal = function openConfigGuideModal() {
+            document.getElementById('guide-modal').classList.remove('hidden');
+        };
+        window.closeConfigGuideModal = function closeConfigGuideModal() {
+            document.getElementById('guide-modal').classList.add('hidden');
+        };
 
         // Toast feedback alerts
         function showToast(message, type = 'info') {
