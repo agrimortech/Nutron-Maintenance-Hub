@@ -156,78 +156,78 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
                 <!-- 3-MONTH COUNTDOWN -->
-                <div class="bg-gradient-to-r from-slate-900 to-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
+                <div class="bg-gradient-to-br from-slate-900 to-slate-900/40 border border-slate-800 rounded-2xl p-4 flex flex-row lg:flex-col xl:flex-row items-center lg:items-start xl:items-center justify-between gap-3 relative overflow-hidden min-h-[96px] lg:min-h-[128px] xl:min-h-[96px]">
                     <div class="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-full blur-xl pointer-events-none"></div>
-                    <div class="flex items-start gap-3">
-                        <div class="bg-teal-500/10 p-2.5 rounded-xl border border-teal-500/20 text-teal-400">
-                            <i data-lucide="activity" class="w-5 h-5"></i>
+                    <div class="flex items-center lg:items-start xl:items-center gap-3 min-w-0">
+                        <div class="bg-teal-500/10 p-2 rounded-xl border border-teal-500/20 text-teal-400 flex-shrink-0">
+                            <i data-lucide="activity" class="w-4 h-4"></i>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-teal-400">3-Month PM Target</span>
-                            <h4 class="font-extrabold text-sm text-slate-100" id="target-3m-phase-label">Calibration Check</h4>
-                            <p class="text-xs text-slate-400 mt-0.5" id="target-3m-text">--</p>
+                        <div class="min-w-0">
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-teal-400 block">3-Month PM Target</span>
+                            <h4 class="font-extrabold text-xs text-slate-100 truncate mt-0.5" id="target-3m-phase-label">Calibration Check</h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5 truncate" id="target-3m-text">--</p>
                         </div>
                     </div>
-                    <div class="text-right">
-                        <span id="countdown-3m" class="text-xl font-black block tracking-tight">--</span>
-                        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Status</span>
+                    <div class="text-right lg:text-left xl:text-right flex-shrink-0 flex flex-col items-end lg:items-start xl:items-end">
+                        <span id="countdown-3m" class="text-lg font-black block tracking-tight">--</span>
+                        <span class="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Status</span>
                     </div>
                 </div>
 
                 <!-- 6-MONTH COUNTDOWN -->
-                <div class="bg-gradient-to-r from-slate-900 to-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
+                <div class="bg-gradient-to-br from-slate-900 to-slate-900/40 border border-slate-800 rounded-2xl p-4 flex flex-row lg:flex-col xl:flex-row items-center lg:items-start xl:items-center justify-between gap-3 relative overflow-hidden min-h-[96px] lg:min-h-[128px] xl:min-h-[96px]">
                     <div class="absolute top-0 right-0 w-24 h-24 bg-sky-500/5 rounded-full blur-xl pointer-events-none"></div>
-                    <div class="flex items-start gap-3">
-                        <div class="bg-sky-500/10 p-2.5 rounded-xl border border-sky-500/20 text-sky-400">
-                            <i data-lucide="milestone" class="w-5 h-5"></i>
+                    <div class="flex items-center lg:items-start xl:items-center gap-3 min-w-0">
+                        <div class="bg-sky-500/10 p-2 rounded-xl border border-sky-500/20 text-sky-400 flex-shrink-0">
+                            <i data-lucide="milestone" class="w-4 h-4"></i>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-sky-400">6-Month PM Target</span>
-                            <h4 class="font-extrabold text-sm text-slate-100" id="target-6m-phase-label">Phase 1 PM Schedule</h4>
-                            <p class="text-xs text-slate-400 mt-0.5" id="target-6m-text">--</p>
+                        <div class="min-w-0">
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-sky-400 block">6-Month PM Target</span>
+                            <h4 class="font-extrabold text-xs text-slate-100 truncate mt-0.5" id="target-6m-phase-label">Phase 1 PM Schedule</h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5 truncate" id="target-6m-text">--</p>
                         </div>
                     </div>
-                    <div class="text-right">
-                        <span id="countdown-6m" class="text-xl font-black block tracking-tight">--</span>
-                        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Status</span>
+                    <div class="text-right lg:text-left xl:text-right flex-shrink-0 flex flex-col items-end lg:items-start xl:items-end">
+                        <span id="countdown-6m" class="text-lg font-black block tracking-tight">--</span>
+                        <span class="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Status</span>
                     </div>
                 </div>
 
                 <!-- 9-MONTH COUNTDOWN -->
-                <div class="bg-gradient-to-r from-slate-900 to-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
+                <div class="bg-gradient-to-br from-slate-900 to-slate-900/40 border border-slate-800 rounded-2xl p-4 flex flex-row lg:flex-col xl:flex-row items-center lg:items-start xl:items-center justify-between gap-3 relative overflow-hidden min-h-[96px] lg:min-h-[128px] xl:min-h-[96px]">
                     <div class="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-xl pointer-events-none"></div>
-                    <div class="flex items-start gap-3">
-                        <div class="bg-purple-500/10 p-2.5 rounded-xl border border-purple-500/20 text-purple-400">
-                            <i data-lucide="cog" class="w-5 h-5"></i>
+                    <div class="flex items-center lg:items-start xl:items-center gap-3 min-w-0">
+                        <div class="bg-purple-500/10 p-2 rounded-xl border border-purple-500/20 text-purple-400 flex-shrink-0">
+                            <i data-lucide="cog" class="w-4 h-4"></i>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-purple-400">9-Month PM Target</span>
-                            <h4 class="font-extrabold text-sm text-slate-100" id="target-9m-phase-label">System Audit</h4>
-                            <p class="text-xs text-slate-400 mt-0.5" id="target-9m-text">--</p>
+                        <div class="min-w-0">
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-purple-400 block">9-Month PM Target</span>
+                            <h4 class="font-extrabold text-xs text-slate-100 truncate mt-0.5" id="target-9m-phase-label">System Audit</h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5 truncate" id="target-9m-text">--</p>
                         </div>
                     </div>
-                    <div class="text-right">
-                        <span id="countdown-9m" class="text-xl font-black block tracking-tight">--</span>
-                        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Status</span>
+                    <div class="text-right lg:text-left xl:text-right flex-shrink-0 flex flex-col items-end lg:items-start xl:items-end">
+                        <span id="countdown-9m" class="text-lg font-black block tracking-tight">--</span>
+                        <span class="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Status</span>
                     </div>
                 </div>
 
                 <!-- 12-MONTH COUNTDOWN -->
-                <div class="bg-gradient-to-r from-slate-900 to-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
+                <div class="bg-gradient-to-br from-slate-900 to-slate-900/40 border border-slate-800 rounded-2xl p-4 flex flex-row lg:flex-col xl:flex-row items-center lg:items-start xl:items-center justify-between gap-3 relative overflow-hidden min-h-[96px] lg:min-h-[128px] xl:min-h-[96px]">
                     <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
-                    <div class="flex items-start gap-3">
-                        <div class="bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20 text-emerald-400">
-                            <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    <div class="flex items-center lg:items-start xl:items-center gap-3 min-w-0">
+                        <div class="bg-emerald-500/10 p-2 rounded-xl border border-emerald-500/20 text-emerald-400 flex-shrink-0">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">12-Month PM Target</span>
-                            <h4 class="font-extrabold text-sm text-slate-100" id="target-12m-phase-label">Warranty PM Audit</h4>
-                            <p class="text-xs text-slate-400 mt-0.5" id="target-12m-text">--</p>
+                        <div class="min-w-0">
+                            <span class="text-[9px] font-bold uppercase tracking-wider text-emerald-400 block">12-Month PM Target</span>
+                            <h4 class="font-extrabold text-xs text-slate-100 truncate mt-0.5" id="target-12m-phase-label">Warranty PM Audit</h4>
+                            <p class="text-[10px] text-slate-400 mt-0.5 truncate" id="target-12m-text">--</p>
                         </div>
                     </div>
-                    <div class="text-right">
-                        <span id="countdown-12m" class="text-xl font-black block tracking-tight">--</span>
-                        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Status</span>
+                    <div class="text-right lg:text-left xl:text-right flex-shrink-0 flex flex-col items-end lg:items-start xl:items-end">
+                        <span id="countdown-12m" class="text-lg font-black block tracking-tight">--</span>
+                        <span class="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Status</span>
                     </div>
                 </div>
 
@@ -1253,10 +1253,10 @@
             const count3El = document.getElementById('countdown-3m');
             if (days3 < 0) {
                 count3El.innerText = "PASSED";
-                count3El.setAttribute('class', "text-sm md:text-lg font-extrabold text-teal-400 bg-teal-500/10 px-2 py-1 rounded border border-teal-500/20 inline-block mt-1");
+                count3El.setAttribute('class', "text-[10px] font-extrabold text-teal-400 bg-teal-500/10 px-1.5 py-0.5 rounded border border-teal-500/20 inline-block mt-0.5");
             } else {
                 count3El.innerText = `${days3} Days`;
-                count3El.setAttribute('class', "text-xl font-black text-teal-400");
+                count3El.setAttribute('class', "text-lg xl:text-xl font-black text-teal-400 block tracking-tight");
             }
 
             // 6-Month Countdown
@@ -1265,10 +1265,10 @@
             const count6El = document.getElementById('countdown-6m');
             if (days6 < 0) {
                 count6El.innerText = "PASSED";
-                count6El.setAttribute('class', "text-sm md:text-lg font-extrabold text-sky-400 bg-sky-500/10 px-2 py-1 rounded border border-sky-500/20 inline-block mt-1");
+                count6El.setAttribute('class', "text-[10px] font-extrabold text-sky-400 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20 inline-block mt-0.5");
             } else {
                 count6El.innerText = `${days6} Days`;
-                count6El.setAttribute('class', "text-xl font-black text-sky-400");
+                count6El.setAttribute('class', "text-lg xl:text-xl font-black text-sky-400 block tracking-tight");
             }
 
             // 9-Month Countdown
@@ -1277,10 +1277,10 @@
             const count9El = document.getElementById('countdown-9m');
             if (days9 < 0) {
                 count9El.innerText = "PASSED";
-                count9El.setAttribute('class', "text-sm md:text-lg font-extrabold text-purple-400 bg-purple-500/10 px-2 py-1 rounded border border-purple-500/20 inline-block mt-1");
+                count9El.setAttribute('class', "text-[10px] font-extrabold text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20 inline-block mt-0.5");
             } else {
                 count9El.innerText = `${days9} Days`;
-                count9El.setAttribute('class', "text-xl font-black text-purple-400");
+                count9El.setAttribute('class', "text-lg xl:text-xl font-black text-purple-400 block tracking-tight");
             }
 
             // 12-Month Countdown
@@ -1289,10 +1289,10 @@
             const count12El = document.getElementById('countdown-12m');
             if (days12 < 0) {
                 count12El.innerText = "PASSED";
-                count12El.setAttribute('class', "text-sm md:text-lg font-extrabold text-rose-400 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20 inline-block mt-1");
+                count12El.setAttribute('class', "text-[10px] font-extrabold text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20 inline-block mt-0.5");
             } else {
                 count12El.innerText = `${days12} Days`;
-                count12El.setAttribute('class', "text-xl font-black text-emerald-400");
+                count12El.setAttribute('class', "text-lg xl:text-xl font-black text-emerald-400 block tracking-tight");
             }
         }
 
