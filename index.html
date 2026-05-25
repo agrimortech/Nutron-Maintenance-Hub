@@ -153,7 +153,7 @@
         <section class="lg:col-span-8 flex flex-col gap-6">
 
             <!-- TIMELINE COUNTDOWNS (Dynamically tied to selected farm targets) -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
                 <!-- 3-MONTH COUNTDOWN -->
                 <div class="bg-gradient-to-r from-slate-900 to-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
@@ -189,6 +189,25 @@
                     </div>
                     <div class="text-right">
                         <span id="countdown-6m" class="text-xl font-black block tracking-tight">--</span>
+                        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Status</span>
+                    </div>
+                </div>
+
+                <!-- 9-MONTH COUNTDOWN -->
+                <div class="bg-gradient-to-r from-slate-900 to-slate-900/40 border border-slate-800 rounded-2xl p-4 flex items-center justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-xl pointer-events-none"></div>
+                    <div class="flex items-start gap-3">
+                        <div class="bg-purple-500/10 p-2.5 rounded-xl border border-purple-500/20 text-purple-400">
+                            <i data-lucide="cog" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-purple-400">9-Month PM Target</span>
+                            <h4 class="font-extrabold text-sm text-slate-100" id="target-9m-phase-label">System Audit</h4>
+                            <p class="text-xs text-slate-400 mt-0.5" id="target-9m-text">--</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span id="countdown-9m" class="text-xl font-black block tracking-tight">--</span>
                         <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Status</span>
                     </div>
                 </div>
@@ -283,6 +302,10 @@
                             <button onclick="switchInterval('6month')" id="tab-6month" 
                                     class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all">
                                 <i data-lucide="calendar-check" class="w-4 h-4"></i> 6-Month Maintenance
+                            </button>
+                            <button onclick="switchInterval('9month')" id="tab-9month" 
+                                    class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                                <i data-lucide="cog" class="w-4 h-4"></i> 9-Month Check
                             </button>
                             <button onclick="switchInterval('12month')" id="tab-12month" 
                                     class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all">
@@ -483,7 +506,7 @@
 
                 <div class="border-t border-slate-800 pt-4 mt-2">
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-3">Timeline Targets Configuration</span>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
                         <div>
                             <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Deployment Date</label>
                             <input type="date" id="form-farm-deployment" onchange="handleDeploymentDateChange(this.value)"
@@ -500,12 +523,17 @@
                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
                         </div>
                         <div>
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">9-Month Target</label>
+                            <input type="date" id="form-farm-9m" 
+                                   class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
+                        </div>
+                        <div>
                             <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">12-Month Target</label>
                             <input type="date" id="form-farm-12m" 
                                    class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
                         </div>
                     </div>
-                    <p class="text-[9px] text-slate-500 mt-2 italic">Altering the Deployment Date automatically suggests 3, 6, & 12-month dates, which can be modified manually.</p>
+                    <p class="text-[9px] text-slate-500 mt-2 italic">Altering the Deployment Date automatically suggests 3, 6, 9, & 12-month dates, which can be modified manually.</p>
                 </div>
             </div>
             <!-- Footer Controls -->
@@ -702,6 +730,14 @@
         let appId = "default-app-id";
         let isEditing = false; 
 
+        // Helper to get matching suffix for specific interval
+        function getSuffix(interval) {
+            if (interval === '3month') return '3m';
+            if (interval === '6month') return '6m';
+            if (interval === '9month') return '9m';
+            return '12m';
+        }
+
         // Baseline Data presets representing deployment file records with target dates
         const baselineFarms = [
             {
@@ -714,6 +750,7 @@
                 deploymentDate: "2025-10-31",
                 date3m: "2026-01-31",
                 date6m: "2026-04-30",
+                date9m: "2026-07-31",
                 date12m: "2026-10-31",
                 checks3m: {
                     mechanical: [true, true, true],
@@ -725,6 +762,11 @@
                     electrical: [true, true, true],
                     sensors: [true, true, true, true]
                 },
+                checks9m: {
+                    mechanical: [false, false, false],
+                    electrical: [false, false, false],
+                    sensors: [false, false, false, false]
+                },
                 checks12m: {
                     mechanical: [false, false, false],
                     electrical: [false, false, false],
@@ -732,15 +774,19 @@
                 },
                 notes3m: "First 3-Month maintenance successfully cleared. Flow meters backwashed. Electro-valves inspected.",
                 notes6m: "System inspected. Highly functional water delivery cycle. Cleared bio-sediments inside Tank Unit 2. Dosing meters calibrated accurately.",
+                notes9m: "",
                 notes12m: "",
                 techName3m: "Farhan Iskandar",
                 techName6m: "Farhan Iskandar",
+                techName9m: "",
                 techName12m: "",
                 sign3m: "Farhan.I",
                 sign6m: "Farhan.I",
+                sign9m: "",
                 sign12m: "",
                 completed3m: true,
                 completed6m: true,
+                completed9m: false,
                 completed12m: false
             },
             {
@@ -753,6 +799,7 @@
                 deploymentDate: "2025-10-31",
                 date3m: "2026-01-31",
                 date6m: "2026-04-30",
+                date9m: "2026-07-31",
                 date12m: "2026-10-31",
                 checks3m: {
                     mechanical: [true, true, true],
@@ -764,6 +811,11 @@
                     electrical: [true, true, false],
                     sensors: [true, true, false, true]
                 },
+                checks9m: {
+                    mechanical: [false, false, false],
+                    electrical: [false, false, false],
+                    sensors: [false, false, false, false]
+                },
                 checks12m: {
                     mechanical: [false, false, false],
                     electrical: [false, false, false],
@@ -771,15 +823,19 @@
                 },
                 notes3m: "3-Month routine calibrations cleared. Readjusted pH probe zero-offset parameters.",
                 notes6m: "Mechanical components secure. High performance registered. Emergency Stop system fully verified. Main cooling fan has some slight dust accumulation, recommends cleaning in 12-Month PM. Calibration offset of 0.2 pH adjusted.",
+                notes9m: "",
                 notes12m: "",
                 techName3m: "Ahmad Kamil",
                 techName6m: "Ahmad Kamil",
+                techName9m: "",
                 techName12m: "",
                 sign3m: "Kamil.A",
                 sign6m: "Kamil.A",
+                sign9m: "",
                 sign12m: "",
                 completed3m: true,
                 completed6m: false,
+                completed9m: false,
                 completed12m: false
             },
             {
@@ -792,6 +848,7 @@
                 deploymentDate: "2025-10-31",
                 date3m: "2026-01-31",
                 date6m: "2026-04-30",
+                date9m: "2026-07-31",
                 date12m: "2026-10-31",
                 checks3m: {
                     mechanical: [false, false, false],
@@ -803,6 +860,11 @@
                     electrical: [false, false, false],
                     sensors: [false, false, false, false]
                 },
+                checks9m: {
+                    mechanical: [false, false, false],
+                    electrical: [false, false, false],
+                    sensors: [false, false, false, false]
+                },
                 checks12m: {
                     mechanical: [false, false, false],
                     electrical: [false, false, false],
@@ -810,15 +872,19 @@
                 },
                 notes3m: "",
                 notes6m: "",
+                notes9m: "",
                 notes12m: "",
                 techName3m: "",
                 techName6m: "",
+                techName9m: "",
                 techName12m: "",
                 sign3m: "",
                 sign6m: "",
+                sign9m: "",
                 sign12m: "",
                 completed3m: false,
                 completed6m: false,
+                completed9m: false,
                 completed12m: false
             },
             {
@@ -831,6 +897,7 @@
                 deploymentDate: "2025-10-31",
                 date3m: "2026-01-31",
                 date6m: "2026-04-30",
+                date9m: "2026-07-31",
                 date12m: "2026-10-31",
                 checks3m: {
                     mechanical: [true, true, true],
@@ -842,6 +909,11 @@
                     electrical: [true, true, true],
                     sensors: [true, true, true, true]
                 },
+                checks9m: {
+                    mechanical: [false, false, false],
+                    electrical: [false, false, false],
+                    sensors: [false, false, false, false]
+                },
                 checks12m: {
                     mechanical: [false, false, false],
                     electrical: [false, false, false],
@@ -849,15 +921,19 @@
                 },
                 notes3m: "Sensors and mechanical nodes operating in highly responsive configuration parameters.",
                 notes6m: "All elements audited. High accuracy telemetry transmission rates (packet confirmation every 10 sec). Bioreactor performance meets high delivery metrics.",
+                notes9m: "",
                 notes12m: "",
                 techName3m: "Farhan Iskandar",
                 techName6m: "Farhan Iskandar",
+                techName9m: "",
                 techName12m: "",
                 sign3m: "Farhan.I",
                 sign6m: "Farhan.I",
+                sign9m: "",
                 sign12m: "",
                 completed3m: true,
                 completed6m: true,
+                completed9m: false,
                 completed12m: false
             },
             {
@@ -870,6 +946,7 @@
                 deploymentDate: "2025-10-31",
                 date3m: "2026-01-31",
                 date6m: "2026-04-30",
+                date9m: "2026-07-31",
                 date12m: "2026-10-31",
                 checks3m: {
                     mechanical: [true, true, true],
@@ -881,6 +958,11 @@
                     electrical: [true, true, true],
                     sensors: [true, true, true, true]
                 },
+                checks9m: {
+                    mechanical: [false, false, false],
+                    electrical: [false, false, false],
+                    sensors: [false, false, false, false]
+                },
                 checks12m: {
                     mechanical: [false, false, false],
                     electrical: [false, false, false],
@@ -888,15 +970,19 @@
                 },
                 notes3m: "Initial physical setup and calibration routine verified. Excellent tank levels and liquid properties.",
                 notes6m: "Verified with lead operators on-site. Dosing pump flow rates confirmed matching standard values. Calibration set points secured.",
+                notes9m: "",
                 notes12m: "",
                 techName3m: "Sufian Shafi",
                 techName6m: "Sufian Shafi",
+                techName9m: "",
                 techName12m: "",
                 sign3m: "Sufian.S",
                 sign6m: "Sufian.S",
+                sign9m: "",
                 sign12m: "",
                 completed3m: true,
                 completed6m: true,
+                completed9m: false,
                 completed12m: false
             }
         ];
@@ -1147,15 +1233,18 @@
 
             const date3mVal = farm.date3m || '2026-01-31';
             const date6mVal = farm.date6m || '2026-04-30';
+            const date9mVal = farm.date9m || '2026-07-31';
             const date12mVal = farm.date12m || '2026-10-31';
 
             const d3 = new Date(date3mVal);
             const d6 = new Date(date6mVal);
+            const d9 = new Date(date9mVal);
             const d12 = new Date(date12mVal);
 
             // Print written target dates
             document.getElementById('target-3m-text').innerText = d3.toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' });
             document.getElementById('target-6m-text').innerText = d6.toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('target-9m-text').innerText = d9.toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' });
             document.getElementById('target-12m-text').innerText = d12.toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' });
 
             // 3-Month Countdown
@@ -1180,6 +1269,18 @@
             } else {
                 count6El.innerText = `${days6} Days`;
                 count6El.setAttribute('class', "text-xl font-black text-sky-400");
+            }
+
+            // 9-Month Countdown
+            const diff9 = d9 - SYSTEM_DATE;
+            const days9 = Math.ceil(diff9 / (1000 * 60 * 60 * 24));
+            const count9El = document.getElementById('countdown-9m');
+            if (days9 < 0) {
+                count9El.innerText = "PASSED";
+                count9El.setAttribute('class', "text-sm md:text-lg font-extrabold text-purple-400 bg-purple-500/10 px-2 py-1 rounded border border-purple-500/20 inline-block mt-1");
+            } else {
+                count9El.innerText = `${days9} Days`;
+                count9El.setAttribute('class', "text-xl font-black text-purple-400");
             }
 
             // 12-Month Countdown
@@ -1212,11 +1313,13 @@
             farms.forEach((farm, index) => {
                 const isActive = index === currentFarmIndex;
                 const totalChecks3 = Object.values(farm.checks3m || {mechanical: [], electrical: [], sensors: []}).flat().filter(Boolean).length;
-                const totalChecks6 = Object.values(farm.checks6m).flat().filter(Boolean).length;
-                const totalChecks12 = Object.values(farm.checks12m).flat().filter(Boolean).length;
+                const totalChecks6 = Object.values(farm.checks6m || {mechanical: [], electrical: [], sensors: []}).flat().filter(Boolean).length;
+                const totalChecks9 = Object.values(farm.checks9m || {mechanical: [], electrical: [], sensors: []}).flat().filter(Boolean).length;
+                const totalChecks12 = Object.values(farm.checks12m || {mechanical: [], electrical: [], sensors: []}).flat().filter(Boolean).length;
                 
                 const percent3 = Math.round((totalChecks3 / 10) * 100);
                 const percent6 = Math.round((totalChecks6 / 10) * 100);
+                const percent9 = Math.round((totalChecks9 / 10) * 100);
                 const percent12 = Math.round((totalChecks12 / 10) * 100);
 
                 const activeClass = isActive 
@@ -1228,6 +1331,9 @@
 
                 const st6Color = farm.completed6m ? 'text-sky-400 bg-sky-500/10 border-sky-500/20' : 'text-amber-400 bg-amber-500/10 border-amber-500/20';
                 const st6Text = farm.completed6m ? '6M Done' : '6M Pending';
+
+                const st9Color = farm.completed9m ? 'text-purple-400 bg-purple-500/10 border-purple-500/20' : 'text-slate-400 bg-slate-800 border-slate-700';
+                const st9Text = farm.completed9m ? '9M Done' : '9M Scheduled';
 
                 const st12Color = farm.completed12m ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-slate-400 bg-slate-800 border-slate-700';
                 const st12Text = farm.completed12m ? '12M Done' : '12M Scheduled';
@@ -1244,6 +1350,7 @@
                         <div class="flex flex-wrap gap-1.5 items-center">
                             <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border ${st3Color}">${st3Text} (${percent3}%)</span>
                             <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border ${st6Color}">${st6Text} (${percent6}%)</span>
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border ${st9Color}">${st9Text} (${percent9}%)</span>
                             <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border ${st12Color}">${st12Text} (${percent12}%)</span>
                         </div>
                     </div>
@@ -1269,9 +1376,11 @@
                 emptyState.classList.remove('hidden');
                 document.getElementById('countdown-3m').innerText = '--';
                 document.getElementById('countdown-6m').innerText = '--';
+                document.getElementById('countdown-9m').innerText = '--';
                 document.getElementById('countdown-12m').innerText = '--';
                 document.getElementById('target-3m-text').innerText = '--';
                 document.getElementById('target-6m-text').innerText = '--';
+                document.getElementById('target-9m-text').innerText = '--';
                 document.getElementById('target-12m-text').innerText = '--';
                 return;
             }
@@ -1305,17 +1414,21 @@
             
             const btn3 = document.getElementById('tab-3month');
             const btn6 = document.getElementById('tab-6month');
+            const btn9 = document.getElementById('tab-9month');
             const btn12 = document.getElementById('tab-12month');
 
             // Reset class lists of all buttons
             btn3.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all text-slate-400 hover:text-slate-200";
             btn6.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all text-slate-400 hover:text-slate-200";
+            btn9.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all text-slate-400 hover:text-slate-200";
             btn12.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all text-slate-400 hover:text-slate-200";
 
             if (interval === '3month') {
                 btn3.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all bg-teal-500 text-slate-950 font-black";
             } else if (interval === '6month') {
                 btn6.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all bg-sky-500 text-slate-950 font-black";
+            } else if (interval === '9month') {
+                btn9.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all bg-purple-500 text-slate-950 font-black";
             } else {
                 btn12.className = "flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all bg-emerald-500 text-slate-950 font-black";
             }
@@ -1334,9 +1447,11 @@
             if (activeInterval === '3month') {
                 dataset = farm.checks3m || { mechanical: [false, false, false], electrical: [false, false, false], sensors: [false, false, false, false] };
             } else if (activeInterval === '6month') {
-                dataset = farm.checks6m;
+                dataset = farm.checks6m || { mechanical: [false, false, false], electrical: [false, false, false], sensors: [false, false, false, false] };
+            } else if (activeInterval === '9month') {
+                dataset = farm.checks9m || { mechanical: [false, false, false], electrical: [false, false, false], sensors: [false, false, false, false] };
             } else {
-                dataset = farm.checks12m;
+                dataset = farm.checks12m || { mechanical: [false, false, false], electrical: [false, false, false], sensors: [false, false, false, false] };
             }
 
             const makeItemHTML = (category, item, index) => {
@@ -1368,16 +1483,11 @@
             const farm = farms[currentFarmIndex];
             
             let dataset;
-            if (activeInterval === '3month') {
-                if (!farm.checks3m) {
-                    farm.checks3m = { mechanical: [false, false, false], electrical: [false, false, false], sensors: [false, false, false, false] };
-                }
-                dataset = farm.checks3m;
-            } else if (activeInterval === '6month') {
-                dataset = farm.checks6m;
-            } else {
-                dataset = farm.checks12m;
+            const suffix = getSuffix(activeInterval);
+            if (!farm['checks' + suffix]) {
+                farm['checks' + suffix] = { mechanical: [false, false, false], electrical: [false, false, false], sensors: [false, false, false, false] };
             }
+            dataset = farm['checks' + suffix];
 
             dataset[category][index] = isChecked;
 
@@ -1395,7 +1505,7 @@
         function renderInputStates() {
             if (farms.length === 0) return;
             const farm = farms[currentFarmIndex];
-            const suffix = activeInterval === '3month' ? '3m' : (activeInterval === '6month' ? '6m' : '12m');
+            const suffix = getSuffix(activeInterval);
 
             document.getElementById('tech-name').value = farm[`techName${suffix}`] || '';
             document.getElementById('tech-signature').value = farm[`sign${suffix}`] || '';
@@ -1409,7 +1519,7 @@
         window.saveInputsDebounced = function saveInputsDebounced() {
             if (farms.length === 0) return;
             const farm = farms[currentFarmIndex];
-            const suffix = activeInterval === '3month' ? '3m' : (activeInterval === '6month' ? '6m' : '12m');
+            const suffix = getSuffix(activeInterval);
 
             farm[`techName${suffix}`] = document.getElementById('tech-name').value;
             farm[`sign${suffix}`] = document.getElementById('tech-signature').value;
@@ -1429,13 +1539,8 @@
             const farm = farms[currentFarmIndex];
             
             let dataset;
-            if (activeInterval === '3month') {
-                dataset = farm.checks3m || { mechanical: [false, false, false], electrical: [false, false, false], sensors: [false, false, false, false] };
-            } else if (activeInterval === '6month') {
-                dataset = farm.checks6m;
-            } else {
-                dataset = farm.checks12m;
-            }
+            const suffix = getSuffix(activeInterval);
+            dataset = farm['checks' + suffix] || { mechanical: [false, false, false], electrical: [false, false, false], sensors: [false, false, false, false] };
 
             const total = Object.values(dataset).flat().length;
             const completed = Object.values(dataset).flat().filter(Boolean).length;
@@ -1452,6 +1557,8 @@
                 circle.setAttribute('class', "text-teal-400 transition-all duration-300");
             } else if (activeInterval === '6month') {
                 circle.setAttribute('class', "text-sky-400 transition-all duration-300");
+            } else if (activeInterval === '9month') {
+                circle.setAttribute('class', "text-purple-400 transition-all duration-300");
             } else {
                 circle.setAttribute('class', "text-emerald-400 transition-all duration-300");
             }
@@ -1461,7 +1568,8 @@
         function updateCompletionBadge() {
             if (farms.length === 0) return;
             const farm = farms[currentFarmIndex];
-            const isCompleted = activeInterval === '3month' ? farm.completed3m : (activeInterval === '6month' ? farm.completed6m : farm.completed12m);
+            const suffix = getSuffix(activeInterval);
+            const isCompleted = farm[`completed${suffix}`];
 
             const badge = document.getElementById('completion-badge');
             const actionBtn = document.getElementById('mark-complete-btn');
@@ -1485,7 +1593,8 @@
         // Complete/Reopen toggler
         window.toggleCompletedState = function toggleCompletedState() {
             const farm = farms[currentFarmIndex];
-            const prop = activeInterval === '3month' ? 'completed3m' : (activeInterval === '6month' ? 'completed6m' : 'completed12m');
+            const suffix = getSuffix(activeInterval);
+            const prop = `completed${suffix}`;
 
             const nameVal = document.getElementById('tech-name').value.trim();
             const signVal = document.getElementById('tech-signature').value.trim();
@@ -1555,6 +1664,7 @@
             document.getElementById('form-farm-deployment').value = farm.deploymentDate || '';
             document.getElementById('form-farm-3m').value = farm.date3m || '';
             document.getElementById('form-farm-6m').value = farm.date6m || '';
+            document.getElementById('form-farm-9m').value = farm.date9m || '';
             document.getElementById('form-farm-12m').value = farm.date12m || '';
 
             document.getElementById('farm-modal').classList.remove('hidden');
@@ -1564,7 +1674,7 @@
             document.getElementById('farm-modal').classList.add('hidden');
         };
 
-        // Automatic suggest calculations (+3, +6 calendar months / +12 calendar months)
+        // Automatic suggest calculations (+3, +6, +9 calendar months / +12 calendar months)
         window.handleDeploymentDateChange = function handleDeploymentDateChange(val) {
             if (!val) return;
             const depDate = new Date(val);
@@ -1576,6 +1686,10 @@
             // Compute +6 Months
             const date6 = new Date(depDate);
             date6.setMonth(date6.getMonth() + 6);
+
+            // Compute +9 Months
+            const date9 = new Date(depDate);
+            date9.setMonth(date9.getMonth() + 9);
             
             // Compute +12 Months
             const date12 = new Date(depDate);
@@ -1583,6 +1697,7 @@
 
             document.getElementById('form-farm-3m').value = date3.toISOString().split('T')[0];
             document.getElementById('form-farm-6m').value = date6.toISOString().split('T')[0];
+            document.getElementById('form-farm-9m').value = date9.toISOString().split('T')[0];
             document.getElementById('form-farm-12m').value = date12.toISOString().split('T')[0];
         };
 
@@ -1600,6 +1715,7 @@
             const deploymentDate = document.getElementById('form-farm-deployment').value;
             const date3m = document.getElementById('form-farm-3m').value;
             const date6m = document.getElementById('form-farm-6m').value;
+            const date9m = document.getElementById('form-farm-9m').value;
             const date12m = document.getElementById('form-farm-12m').value;
 
             if (!rawRef || !name || !crop) {
@@ -1618,6 +1734,7 @@
                 farm.deploymentDate = deploymentDate;
                 farm.date3m = date3m;
                 farm.date6m = date6m;
+                farm.date9m = date9m;
                 farm.date12m = date12m;
 
                 syncFarmToCloud(currentFarmIndex);
@@ -1641,6 +1758,7 @@
                     deploymentDate,
                     date3m,
                     date6m,
+                    date9m,
                     date12m,
                     checks3m: {
                         mechanical: [false, false, false],
@@ -1652,6 +1770,11 @@
                         electrical: [false, false, false],
                         sensors: [false, false, false, false]
                     },
+                    checks9m: {
+                        mechanical: [false, false, false],
+                        electrical: [false, false, false],
+                        sensors: [false, false, false, false]
+                    },
                     checks12m: {
                         mechanical: [false, false, false],
                         electrical: [false, false, false],
@@ -1659,15 +1782,19 @@
                     },
                     notes3m: "",
                     notes6m: "",
+                    notes9m: "",
                     notes12m: "",
                     techName3m: "",
                     techName6m: "",
+                    techName9m: "",
                     techName12m: "",
                     sign3m: "",
                     sign6m: "",
+                    sign9m: "",
                     sign12m: "",
                     completed3m: false,
                     completed6m: false,
+                    completed9m: false,
                     completed12m: false
                 };
 
@@ -1706,7 +1833,7 @@
         window.generateReportModal = function generateReportModal() {
             if (farms.length === 0) return;
             const farm = farms[currentFarmIndex];
-            const suffix = activeInterval === '3month' ? '3m' : (activeInterval === '6month' ? '6m' : '12m');
+            const suffix = getSuffix(activeInterval);
 
             document.getElementById('report-date-checked').innerText = SYSTEM_DATE.toLocaleDateString('en-MY', { day: 'numeric', month: 'long', year: 'numeric' });
             document.getElementById('report-farm-name').innerText = farm.name;
@@ -1718,6 +1845,8 @@
                 catTitle = '3-MONTH CALIBRATION & PM AUDIT';
             } else if (activeInterval === '6month') {
                 catTitle = '6-MONTH PREVENTIVE MAINTENANCE';
+            } else if (activeInterval === '9month') {
+                catTitle = '9-MONTH PREVENTIVE MAINTENANCE AUDIT';
             } else {
                 catTitle = '12-MONTH PREVENTIVE WARRANTY AUDIT';
             }
@@ -1739,13 +1868,7 @@
             const summaryContainer = document.getElementById('report-checklist-summary');
             
             let dataset;
-            if (activeInterval === '3month') {
-                dataset = farm.checks3m || { mechanical: [false, false, false], electrical: [false, false, false], sensors: [false, false, false, false] };
-            } else if (activeInterval === '6month') {
-                dataset = farm.checks6m;
-            } else {
-                dataset = farm.checks12m;
-            }
+            dataset = farm['checks' + suffix] || { mechanical: [false, false, false], electrical: [false, false, false], sensors: [false, false, false, false] };
 
             const totalMech = dataset.mechanical.filter(Boolean).length;
             const totalElec = dataset.electrical.filter(Boolean).length;
@@ -1779,8 +1902,8 @@
         // Copier utility for Sandboxed document compliance
         window.copyReportText = function copyReportText() {
             const farm = farms[currentFarmIndex];
-            const suffix = activeInterval === '3month' ? '3m' : (activeInterval === '6month' ? '6m' : '12m');
-            const category = activeInterval === '3month' ? '3-Month PM' : (activeInterval === '6month' ? '6-Month PM' : '12-Month PM');
+            const suffix = getSuffix(activeInterval);
+            const category = activeInterval === '3month' ? '3-Month PM' : (activeInterval === '6month' ? '6-Month PM' : (activeInterval === '9month' ? '9-Month PM' : '12-Month PM'));
 
             const output = `
 NUTRON SYSTEM MAINTENANCE DIAGNOSTIC REPORT
